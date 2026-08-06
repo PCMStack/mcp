@@ -1,6 +1,6 @@
 {
 	"name": "pcm-mcp",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "MCP server for querying Pro Cycling Manager game databases",
 	"type": "module",
 	"bin": {
@@ -24,7 +24,7 @@
 		"start:dev": "tsup --watch --onSuccess \"node ./dist/index.js\""
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.4",
+		"@biomejs/biome": "2.5.6",
 		"@types/node": "^22.20.0",
 		"@types/sql.js": "^1.4.11",
 		"@vitest/coverage-v8": "^4.1.5",
@@ -50,7 +50,7 @@
 	"dependencies": {
 		"@anthropic-ai/mcpb": "^2.1.2",
 		"@modelcontextprotocol/sdk": "^1.29.0",
-		"cdb-converter": "^0.2.0",
+		"cdb-converter": "^0.3.0",
 		"sql-query-identifier": "^3.1.1",
 		"sql.js": "^1.14.1",
 		"zod": "^3.25.76"

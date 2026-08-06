@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import initSqlJs from "sql.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { z } from "zod";
 import { registerUpdateCyclistRatings } from "../../src/tools/update-cyclist-ratings";
 import { saveFixtures } from "../fixtures/save.fixture";
 import type { MockMcpServer } from "../mocks/mock-mcp-server";
@@ -44,6 +45,12 @@ async function readRatings(
 describe("updateCyclistRatings", () => {
 	let mcp: MockMcpServer;
 	let outDir: string;
+
+	const inputSchema = () =>
+		z.object(mcp.getTool("pcm_update_cyclist_ratings")?.config.inputSchema);
+
+	const parseArgs = (args: Record<string, unknown>) =>
+		inputSchema().parse(args) as Record<string, unknown>;
 
 	beforeEach(async () => {
 		mcp = createMockMcpServer();
@@ -153,6 +160,45 @@ describe("updateCyclistRatings", () => {
 			});
 		},
 	);
+
+	it.each(saveFixtures)(
+		"accepts the lowest allowed rating (50) for %s",
+		async (_name, path) => {
+			const cyclistId = await readFirstCyclistId(path);
+			const outputPath = join(outDir, "edited.cdb");
+
+			const result = await mcp.callTool(
+				"pcm_update_cyclist_ratings",
+				parseArgs({
+					savePath: path,
+					outputPath,
+					cyclistId,
+					ratings: { sprint: 50 },
+				}),
+			);
+
+			expect(result.isError).toBeUndefined();
+			expect(
+				await readRatings(outputPath, cyclistId, ["charac_i_sprint"]),
+			).toEqual([50]);
+		},
+	);
+
+	it("rejects a rating below the minimum (49)", () => {
+		const result = inputSchema().safeParse({
+			savePath: "/saves/career.cdb",
+			outputPath: "/saves/edited.cdb",
+			cyclistId: 1,
+			ratings: { sprint: 49 },
+		});
+
+		expect(result.success).toBe(false);
+		expect(result.error?.issues[0]).toMatchObject({
+			path: ["ratings", "sprint"],
+			code: "too_small",
+			minimum: 50,
+		});
+	});
 
 	it.each(saveFixtures.filter(([, , hasMediumMountain]) => hasMediumMountain))(
 		"sets mediumMountain for %s",
