@@ -167,9 +167,6 @@ describe("updateCyclistRatings", () => {
 			const cyclistId = await readFirstCyclistId(path);
 			const outputPath = join(outDir, "edited.cdb");
 
-			// `callTool` invokes the callback directly, so the arguments go
-			// through the registered input schema first — that is where the
-			// 50–85 bound lives.
 			const result = await mcp.callTool(
 				"pcm_update_cyclist_ratings",
 				parseArgs({
