@@ -9,7 +9,7 @@ import {
 } from "../schemas/cyclist";
 import { getTableColumnNames, withSaveDb, writeSaveDb } from "../save-db";
 
-const ratingValue = z.number().int().min(55).max(85);
+const ratingValue = z.number().int().min(50).max(85);
 
 const newRatingsSchema = z.object({
 	plain: ratingValue.optional().describe("New plain rating (charac_i_plain)"),
@@ -91,7 +91,7 @@ export function registerUpdateCyclistRatings(server: McpServer): void {
 						"ID of the cyclist to modify (DYN_cyclist.IDcyclist — find it with pcm_search_cyclist)",
 					),
 				ratings: newRatingsSchema.describe(
-					"Ratings to change (55–85). Only the fields provided are updated; the others keep their current value.",
+					"Ratings to change (50–85). Only the fields provided are updated; the others keep their current value.",
 				),
 			},
 			outputSchema,
