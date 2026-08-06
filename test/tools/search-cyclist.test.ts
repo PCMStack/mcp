@@ -19,7 +19,7 @@ describe("searchCyclist", () => {
 
 	it.each(databaseFixtures)(
 		"finds cyclists by last name for %s",
-		async (name, path) => {
+		async (_, path) => {
 			const result = await mcp.callTool("pcm_search_cyclist", {
 				databasePath: path,
 				lastName: "van der",

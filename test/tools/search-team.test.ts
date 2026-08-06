@@ -17,18 +17,15 @@ describe("searchTeam", () => {
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	it.each(databaseFixtures)(
-		"finds teams by name for %s",
-		async (name, path) => {
-			const result = await mcp.callTool("pcm_search_team", {
-				databasePath: path,
-				name: "movistar",
-			});
+	it.each(databaseFixtures)("finds teams by name for %s", async (_, path) => {
+		const result = await mcp.callTool("pcm_search_team", {
+			databasePath: path,
+			name: "movistar",
+		});
 
-			expect(result.structuredContent).toBeDefined();
-			expect(result.structuredContent).toMatchSnapshot();
-		},
-	);
+		expect(result.structuredContent).toBeDefined();
+		expect(result.structuredContent).toMatchSnapshot();
+	});
 
 	it("caps results at 10 and flags truncation for a broad search", async () => {
 		const result = await mcp.callTool("pcm_search_team", {

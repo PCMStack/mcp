@@ -19,7 +19,7 @@ describe("getTeamRoster", () => {
 
 	it.each(databaseFixtures)(
 		"returns the roster for a given team for %s",
-		async (name, path) => {
+		async (_, path) => {
 			const result = await mcp.callTool("pcm_get_team_roster", {
 				databasePath: path,
 				teamId: 1,

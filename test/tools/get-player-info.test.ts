@@ -22,7 +22,7 @@ describe("getPlayerInfo", () => {
 	// surface that as a graceful error rather than throwing.
 	it.each(databaseFixtures)(
 		"errors when there is no active player for %s",
-		async (name, path) => {
+		async (_, path) => {
 			const result = await mcp.callTool("pcm_get_player_info", {
 				databasePath: path,
 			});

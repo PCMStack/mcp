@@ -17,15 +17,12 @@ describe("listTables", () => {
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	it.each(databaseFixtures)(
-		"returns every table for %s",
-		async (name, path) => {
-			const result = await mcp.callTool("pcm_list_tables", {
-				databasePath: path,
-			});
+	it.each(databaseFixtures)("returns every table for %s", async (_, path) => {
+		const result = await mcp.callTool("pcm_list_tables", {
+			databasePath: path,
+		});
 
-			expect(result.structuredContent).toBeDefined();
-			expect(result.structuredContent).toMatchSnapshot();
-		},
-	);
+		expect(result.structuredContent).toBeDefined();
+		expect(result.structuredContent).toMatchSnapshot();
+	});
 });

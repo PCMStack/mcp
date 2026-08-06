@@ -19,7 +19,7 @@ describe("getTableSchema", () => {
 
 	it.each(databaseFixtures)(
 		"returns STA_race table schema for %s",
-		async (name, path) => {
+		async (_, path) => {
 			const result = await mcp.callTool("pcm_get_table_schema", {
 				databasePath: path,
 				tableName: "STA_race",
