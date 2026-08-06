@@ -35,7 +35,7 @@ export interface MockMcpServer {
  * @example
  * const mcp = createMockMcpServer();
  * registerGetTableSchema(mcp.server);
- * const result = await mcp.callTool("pcm_get_table_schema", { savePath, tableName });
+ * const result = await mcp.callTool("pcm_get_table_schema", { databasePath, tableName });
  */
 export function createMockMcpServer(): MockMcpServer {
 	const tools: RegisteredTool[] = [];

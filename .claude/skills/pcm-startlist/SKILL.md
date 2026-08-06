@@ -4,7 +4,7 @@ description: >-
   Build a Pro Cycling Manager (PCM) race startlist and export it as the .xml
   file PCM imports. Use when the user wants to create, compose, or generate a
   startlist for a PCM race — picking which teams take part and which riders
-  each team brings. Orchestrates the read-only PCM MCP tools (pcm_query_save,
+  each team brings. Orchestrates the read-only PCM MCP tools (pcm_query_database,
   pcm_search_cyclist) to gather data and pcm_generate_startlist_xml to produce
   the file. Triggers on phrases like "startlist", "liste de départ",
   "engagés pour la course", "génère le fichier xml de la course X".
@@ -34,17 +34,20 @@ returned by the tool — don't invent it.
 
 ## Workflow
 
-### 1. Get a save path
+### 1. Get a database path
 
-Every step reads a `.cdb` save. If the user hasn't given an absolute `savePath`:
+Every step reads a `.cdb` database — a career save, an official release or a
+community update, it makes no difference. If the user hasn't given an absolute
+`databasePath`:
 
-- Try `pcm_list_saves` (Windows only — fails on macOS/Linux Wine/Proton prefixes).
+- Try `pcm_list_saves` to find their career saves (Windows only — fails on
+  macOS/Linux Wine/Proton prefixes).
 - Otherwise ask the user for the absolute `.cdb` path. Keep it in context; the
   tools are stateless and need it on every call.
 
 ### 2. Identify the race (get `IDrace`)
 
-The user names a race; resolve it to an `IDrace` with `pcm_query_save`:
+The user names a race; resolve it to an `IDrace` with `pcm_query_database`:
 
 ```sql
 SELECT IDrace, gene_sz_race_name, gene_sz_filename
@@ -88,11 +91,11 @@ before generating when there's any ambiguity.
 
 ### 5. Generate the file
 
-Call `pcm_generate_startlist_xml` with `savePath`, `raceId`, and `teams`:
+Call `pcm_generate_startlist_xml` with `databasePath`, `raceId`, and `teams`:
 
 ```json
 {
-  "savePath": "/abs/path/OfficialRelease.cdb",
+  "databasePath": "/abs/path/OfficialRelease.cdb",
   "raceId": 128,
   "teams": [
     { "id": 34, "cyclists": [7602, 5996, 1381, 3291, 6342, 3912, 5613] },
@@ -112,6 +115,7 @@ server is read-only and does not write files, so saving is done outside it.
 
 ## Notes
 
-- All PCM MCP tools are read-only; this workflow never modifies the save.
+- All PCM MCP tools used here are read-only; this workflow never modifies the
+  database.
 - IDs, not names, go into the XML — always resolve names to `IDteam`/`IDcyclist`
   via the queries above before calling the tool.

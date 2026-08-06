@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { mapRatings, ratingsColumns, ratingsSchema } from "../schemas/cyclist";
 import { ageFromYmd } from "../helpers";
-import { getGameDate, getTableColumnNames, withSaveDb } from "../save-db";
+import { getGameDate, getTableColumnNames, withCdb } from "../cdb";
 
 const cyclistSchema = z.object({
 	id: z.number().describe("Cyclist ID (IDcyclist)"),
@@ -28,7 +28,7 @@ const cyclistSchema = z.object({
 		.number()
 		.nullable()
 		.describe(
-			"Overall ability / note globale (value_f_current_ability) — null on saves that pre-date this column.",
+			"Overall ability (value_f_current_ability) — null on databases that pre-date this column.",
 		),
 	contractEndYear: z
 		.number()
@@ -46,7 +46,7 @@ const cyclistSchema = z.object({
 		.number()
 		.nullable()
 		.describe(
-			"Market value / valeur (value_f_capital) — null on saves that pre-date this column.",
+			"Market value (value_f_capital) — null on databases that pre-date this column.",
 		),
 	...ratingsSchema.shape,
 });
@@ -64,9 +64,11 @@ export function registerGetTeamRoster(server: McpServer): void {
 		{
 			title: "Get PCM team roster",
 			description:
-				"List the roster of a team in a Pro Cycling Manager `.cdb` save file. Defaults to the active human player's team (GAM_user.game_i_active = 1) when `teamId` is omitted. Joins DYN_cyclist with its active DYN_contract_cyclist and STA_type_rider, and for each rider returns name, country, age, rider type, overall ability (note globale), contract end year, wage, market value and all per-terrain ability ratings (plain, mountain, medium mountain, downhilling, cobble, time trial, prologue, sprint, acceleration, endurance, resistance, recuperation, hill, baroudeur). Ordered by overall ability, highest first.",
+				"List the roster of a team in a Pro Cycling Manager `.cdb` database. Defaults to the active human player's team (GAM_user.game_i_active = 1) when `teamId` is omitted. Joins DYN_cyclist with its active DYN_contract_cyclist and STA_type_rider, and for each cyclist returns name, country, age, rider type, overall ability (note globale), contract end year, wage, market value and all per-terrain ability ratings (plain, mountain, medium mountain, downhilling, cobble, time trial, prologue, sprint, acceleration, endurance, resistance, recuperation, hill, baroudeur). Ordered by overall ability, highest first.",
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 				teamId: z
 					.number()
 					.int()
@@ -83,8 +85,8 @@ export function registerGetTeamRoster(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath, teamId }) =>
-			withSaveDb(savePath, (db, save) => {
+		async ({ databasePath, teamId }) =>
+			withCdb(databasePath, (db, file) => {
 				// Resolve the target team: explicit teamId, else the active player's team.
 				let resolvedTeamId = teamId;
 				if (resolvedTeamId == null) {
@@ -94,7 +96,7 @@ export function registerGetTeamRoster(server: McpServer): void {
 					const value = teamResult[0]?.values?.[0]?.[0];
 					if (value == null) {
 						throw new Error(
-							`No active player (game_i_active = 1) found in ${save.name}; pass teamId explicitly.`,
+							`No active player (game_i_active = 1) found in ${file.name}; pass teamId explicitly.`,
 						);
 					}
 					resolvedTeamId = Number(value);
@@ -107,7 +109,7 @@ export function registerGetTeamRoster(server: McpServer): void {
 					teamStmt.bind({ ":teamId": resolvedTeamId });
 					if (!teamStmt.step()) {
 						throw new Error(
-							`Team ${resolvedTeamId} not found in ${save.name}.`,
+							`Team ${resolvedTeamId} not found in ${file.name}.`,
 						);
 					}
 				} finally {

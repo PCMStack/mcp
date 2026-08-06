@@ -6,7 +6,7 @@ import initSqlJs from "sql.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { registerUpdateCyclistRatings } from "../../src/tools/update-cyclist-ratings";
-import { saveFixtures } from "../fixtures/save.fixture";
+import { databaseFixtures } from "../fixtures/database.fixture";
 import type { MockMcpServer } from "../mocks/mock-mcp-server";
 import { createMockMcpServer } from "../mocks/mock-mcp-server";
 
@@ -67,14 +67,14 @@ describe("updateCyclistRatings", () => {
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"updates ratings and writes the change to a new .cdb for %s",
 		async (_name, path) => {
 			const cyclistId = await readFirstCyclistId(path);
 			const outputPath = join(outDir, "edited.cdb");
 
 			const result = await mcp.callTool("pcm_update_cyclist_ratings", {
-				savePath: path,
+				databasePath: path,
 				outputPath,
 				cyclistId,
 				ratings: { sprint: 81, mountain: 72 },
@@ -98,7 +98,7 @@ describe("updateCyclistRatings", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"only changes the ratings that were passed for %s",
 		async (_name, path) => {
 			const cyclistId = await readFirstCyclistId(path);
@@ -109,7 +109,7 @@ describe("updateCyclistRatings", () => {
 			const outputPath = join(outDir, "edited.cdb");
 
 			await mcp.callTool("pcm_update_cyclist_ratings", {
-				savePath: path,
+				databasePath: path,
 				outputPath,
 				cyclistId,
 				ratings: { sprint: 81 },
@@ -124,11 +124,11 @@ describe("updateCyclistRatings", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"errors on an unknown cyclist ID for %s",
 		async (_name, path) => {
 			const result = await mcp.callTool("pcm_update_cyclist_ratings", {
-				savePath: path,
+				databasePath: path,
 				outputPath: join(outDir, "edited.cdb"),
 				cyclistId: 999999999,
 				ratings: { sprint: 81 },
@@ -137,17 +137,17 @@ describe("updateCyclistRatings", () => {
 			expect(result.isError).toBe(true);
 			expect(result.content[0]).toEqual({
 				type: "text",
-				text: "No cyclist with IDcyclist = 999999999 in this save — use pcm_search_cyclist to find the right ID.",
+				text: "No cyclist with IDcyclist = 999999999 in this database — use pcm_search_cyclist to find the right ID.",
 			});
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"errors when no rating is provided for %s",
 		async (_name, path) => {
 			const cyclistId = await readFirstCyclistId(path);
 			const result = await mcp.callTool("pcm_update_cyclist_ratings", {
-				savePath: path,
+				databasePath: path,
 				outputPath: join(outDir, "edited.cdb"),
 				cyclistId,
 				ratings: {},
@@ -161,7 +161,7 @@ describe("updateCyclistRatings", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"accepts the lowest allowed rating (50) for %s",
 		async (_name, path) => {
 			const cyclistId = await readFirstCyclistId(path);
@@ -170,7 +170,7 @@ describe("updateCyclistRatings", () => {
 			const result = await mcp.callTool(
 				"pcm_update_cyclist_ratings",
 				parseArgs({
-					savePath: path,
+					databasePath: path,
 					outputPath,
 					cyclistId,
 					ratings: { sprint: 50 },
@@ -186,7 +186,7 @@ describe("updateCyclistRatings", () => {
 
 	it("rejects a rating below the minimum (49)", () => {
 		const result = inputSchema().safeParse({
-			savePath: "/saves/career.cdb",
+			databasePath: "/saves/career.cdb",
 			outputPath: "/saves/edited.cdb",
 			cyclistId: 1,
 			ratings: { sprint: 49 },
@@ -200,31 +200,32 @@ describe("updateCyclistRatings", () => {
 		});
 	});
 
-	it.each(saveFixtures.filter(([, , hasMediumMountain]) => hasMediumMountain))(
-		"sets mediumMountain for %s",
+	it.each(
+		databaseFixtures.filter(([, , hasMediumMountain]) => hasMediumMountain),
+	)("sets mediumMountain for %s", async (_name, path) => {
+		const cyclistId = await readFirstCyclistId(path);
+		const outputPath = join(outDir, "edited.cdb");
+		const result = await mcp.callTool("pcm_update_cyclist_ratings", {
+			databasePath: path,
+			outputPath,
+			cyclistId,
+			ratings: { mediumMountain: 77 },
+		});
+
+		expect(result.isError).toBeUndefined();
+		expect(
+			await readRatings(outputPath, cyclistId, ["charac_i_medium_mountain"]),
+		).toEqual([77]);
+	});
+
+	it.each(
+		databaseFixtures.filter(([, , hasMediumMountain]) => !hasMediumMountain),
+	)(
+		"rejects mediumMountain on databases that pre-date the column for %s",
 		async (_name, path) => {
 			const cyclistId = await readFirstCyclistId(path);
-			const outputPath = join(outDir, "edited.cdb");
 			const result = await mcp.callTool("pcm_update_cyclist_ratings", {
-				savePath: path,
-				outputPath,
-				cyclistId,
-				ratings: { mediumMountain: 77 },
-			});
-
-			expect(result.isError).toBeUndefined();
-			expect(
-				await readRatings(outputPath, cyclistId, ["charac_i_medium_mountain"]),
-			).toEqual([77]);
-		},
-	);
-
-	it.each(saveFixtures.filter(([, , hasMediumMountain]) => !hasMediumMountain))(
-		"rejects mediumMountain on saves that pre-date the column for %s",
-		async (_name, path) => {
-			const cyclistId = await readFirstCyclistId(path);
-			const result = await mcp.callTool("pcm_update_cyclist_ratings", {
-				savePath: path,
+				databasePath: path,
 				outputPath: join(outDir, "edited.cdb"),
 				cyclistId,
 				ratings: { mediumMountain: 77 },
@@ -233,7 +234,7 @@ describe("updateCyclistRatings", () => {
 			expect(result.isError).toBe(true);
 			expect(result.content[0]).toEqual({
 				type: "text",
-				text: "This save pre-dates the charac_i_medium_mountain column — mediumMountain cannot be set on it.",
+				text: "This database pre-dates the charac_i_medium_mountain column — mediumMountain cannot be set on it.",
 			});
 		},
 	);

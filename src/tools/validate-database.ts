@@ -1,11 +1,11 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { errorResponse, validResponse } from "../helpers";
-import { validateSave } from "../saves";
+import { validateCdb } from "../cdb";
 
 const outputSchema = z.object({
-	path: z.string().describe("Absolute path to the .cdb save file"),
-	name: z.string().describe("File name, e.g. `MyCareer.cdb`"),
+	path: z.string().describe("Absolute path to the .cdb database file"),
+	name: z.string().describe("File name, e.g. `OfficialRelease-2025.cdb`"),
 	lastModified: z
 		.string()
 		.describe(
@@ -14,15 +14,17 @@ const outputSchema = z.object({
 	sizeBytes: z.number().describe("File size in bytes"),
 });
 
-export function registerValidateSave(server: McpServer): void {
+export function registerValidateDatabase(server: McpServer): void {
 	server.registerTool(
-		"pcm_validate_save",
+		"pcm_validate_database",
 		{
-			title: "Validate PCM save",
+			title: "Validate PCM database",
 			description:
-				"Validate that an absolute path points to an existing Pro Cycling Manager `.cdb` save file and return its metadata. Stateless: nothing is stored — keep the returned path in conversation context to pass to later tools.",
+				"Validate that an absolute path points to an existing Pro Cycling Manager `.cdb` database and return its metadata. Stateless: nothing is stored — keep the returned path in conversation context to pass to later tools.",
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 			},
 			outputSchema,
 			annotations: {
@@ -32,12 +34,12 @@ export function registerValidateSave(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath }) => {
+		async ({ databasePath }) => {
 			try {
-				const save = await validateSave(savePath);
+				const file = await validateCdb(databasePath);
 
 				const output: z.infer<typeof outputSchema> = {
-					...save,
+					...file,
 				};
 
 				return validResponse(output);

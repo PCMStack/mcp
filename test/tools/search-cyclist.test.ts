@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { registerSearchCyclist } from "../../src/tools/search-cyclist";
-import { saveFixtures } from "../fixtures/save.fixture";
+import { databaseFixtures } from "../fixtures/database.fixture";
 import { createMockMcpServer } from "../mocks/mock-mcp-server";
 import type { MockMcpServer } from "../mocks/mock-mcp-server";
 
@@ -17,11 +17,11 @@ describe("searchCyclist", () => {
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"finds cyclists by last name for %s",
 		async (name, path) => {
 			const result = await mcp.callTool("pcm_search_cyclist", {
-				savePath: path,
+				databasePath: path,
 				lastName: "van der",
 			});
 
@@ -32,7 +32,7 @@ describe("searchCyclist", () => {
 
 	it("caps results at 10 and flags truncation for a broad search", async () => {
 		const result = await mcp.callTool("pcm_search_cyclist", {
-			savePath: saveFixtures[0][1],
+			databasePath: databaseFixtures[0][1],
 			lastName: "a",
 		});
 
@@ -46,7 +46,7 @@ describe("searchCyclist", () => {
 
 	it("returns an error when neither name is provided", async () => {
 		const result = await mcp.callTool("pcm_search_cyclist", {
-			savePath: saveFixtures[0][1],
+			databasePath: databaseFixtures[0][1],
 		});
 
 		expect(result.isError).toBe(true);

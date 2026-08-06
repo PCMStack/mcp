@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { withSaveDb } from "../save-db";
+import { withCdb } from "../cdb";
 
 const outputSchema = z.object({
 	name: z.string().describe("Table name"),
@@ -28,13 +28,15 @@ export function registerGetTableSchema(server: McpServer): void {
 		{
 			title: "Get PCM table schema",
 			description:
-				"Inspect a single table inside a Pro Cycling Manager `.cdb` save file by name. Returns the table's columns (name, SQL type, NOT NULL and primary key flags) and its row count. Use `pcm_get_save_schema` first to discover available table names.",
+				"Inspect a single table inside a Pro Cycling Manager `.cdb` database by name. Returns the table's columns (name, SQL type, NOT NULL and primary key flags) and its row count. Use `pcm_list_tables` first to discover available table names.",
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 				tableName: z
 					.string()
 					.describe(
-						"Name of the table to inspect, as listed by `pcm_get_save_schema`",
+						"Name of the table to inspect, as listed by `pcm_list_tables`",
 					),
 			},
 			outputSchema,
@@ -45,19 +47,19 @@ export function registerGetTableSchema(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath, tableName }) =>
-			withSaveDb(savePath, (db, save) => {
+		async ({ databasePath, tableName }) =>
+			withCdb(databasePath, (db, file) => {
 				// Validate the table exists (and guard against SQL injection) by
 				// matching the name against DB_STRUCTURE before interpolating it.
 				// DB_STRUCTURE columns aren't named, so read by position: the table
-				// name is the first column (see get_save_schema).
+				// name is the first column (see list_tables).
 				const structure = db.exec("SELECT * FROM DB_STRUCTURE");
 				const knownTables = (structure[0]?.values ?? []).map((row) =>
 					String(row[0]),
 				);
 				if (!knownTables.includes(tableName)) {
 					throw new Error(
-						`Table "${tableName}" not found in ${save.name}. Use pcm_get_save_schema to list available tables.`,
+						`Table "${tableName}" not found in ${file.name}. Use pcm_list_tables to list available tables.`,
 					);
 				}
 

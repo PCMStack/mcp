@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { withSaveDb } from "../save-db";
+import { withCdb } from "../cdb";
 
 const outputSchema = z.object({
 	tables: z
@@ -10,19 +10,21 @@ const outputSchema = z.object({
 				name: z.string().describe("Table name"),
 			}),
 		)
-		.describe("Tables in the .cdb save file"),
-	tableCount: z.number().describe("Number of tables in the .cdb save file"),
+		.describe("Tables in the .cdb database"),
+	tableCount: z.number().describe("Number of tables in the .cdb database"),
 });
 
-export function registerGetSaveSchema(server: McpServer): void {
+export function registerListTables(server: McpServer): void {
 	server.registerTool(
-		"pcm_get_save_schema",
+		"pcm_list_tables",
 		{
-			title: "Get PCM save schema",
+			title: "List PCM database tables",
 			description:
-				"List all tables in a Pro Cycling Manager `.cdb` save via DB_STRUCTURE (table id + name), plus the total table count.",
+				"List every table in a Pro Cycling Manager `.cdb` database via DB_STRUCTURE (table id + name), plus the total table count. Use `pcm_get_table_schema` next to inspect a table's columns.",
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 			},
 			outputSchema,
 			annotations: {
@@ -32,8 +34,8 @@ export function registerGetSaveSchema(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath }) =>
-			withSaveDb(savePath, (db) => {
+		async ({ databasePath }) =>
+			withCdb(databasePath, (db) => {
 				const results = db.exec("SELECT * FROM DB_STRUCTURE");
 				const rows = results[0]?.values ?? [];
 

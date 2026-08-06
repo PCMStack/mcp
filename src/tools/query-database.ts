@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { explainQueryError, parseSingleStatement } from "../helpers";
-import { withSaveDb } from "../save-db";
+import { withCdb } from "../cdb";
 
 const DEFAULT_LIMIT = 100;
 const MAX_LIMIT = 1000;
@@ -18,15 +18,17 @@ const outputSchema = z.object({
 		.describe("Whether the result was capped at `limit` rows"),
 });
 
-export function registerQuerySave(server: McpServer): void {
+export function registerQueryDatabase(server: McpServer): void {
 	server.registerTool(
-		"pcm_query_save",
+		"pcm_query_database",
 		{
-			title: "Query PCM save (read-only)",
+			title: "Query PCM database (read-only)",
 			description:
-				"Run a read-only SQL query against any table in a Pro Cycling Manager `.cdb` save file. Only a single SELECT (or WITH … SELECT) statement is allowed; write/DDL statements are rejected and the save is never modified. Results are capped (default 100, max 1000 rows). Use `pcm_get_save_schema` to discover table names and `pcm_get_table_schema` to inspect their columns.",
+				"Run a read-only SQL query against any table in a Pro Cycling Manager `.cdb` database. Only a single SELECT (or WITH … SELECT) statement is allowed; write/DDL statements are rejected and the database is never modified. Results are capped (default 100, max 1000 rows). Use `pcm_list_tables` to discover table names and `pcm_get_table_schema` to inspect their columns.",
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 				query: z
 					.string()
 					.describe(
@@ -50,8 +52,8 @@ export function registerQuerySave(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath, query, limit }) =>
-			withSaveDb(savePath, (db) => {
+		async ({ databasePath, query, limit }) =>
+			withCdb(databasePath, (db) => {
 				const safeQuery = assertReadOnlyQuery(query);
 				const effectiveLimit = Math.min(limit ?? DEFAULT_LIMIT, MAX_LIMIT);
 
@@ -96,7 +98,7 @@ export function registerQuerySave(server: McpServer): void {
  * literal, comment or quoted identifier is not mistaken for a statement
  * separator. CTEs are classified by their leaf operation, so `WITH … SELECT`
  * reads (`LISTING`) while `WITH … DELETE` writes (`MODIFICATION`) — only the
- * former is accepted. `PRAGMA query_only = ON` (see {@link withSaveDb}) stays as
+ * former is accepted. `PRAGMA query_only = ON` (see {@link withCdb}) stays as
  * the engine-level backstop.
  */
 export function assertReadOnlyQuery(rawQuery: string): string {

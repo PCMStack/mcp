@@ -1,33 +1,33 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { explainQueryError, parseSingleStatement } from "../helpers";
-import { withSaveDb, writeSaveDb } from "../save-db";
+import { withCdb, writeCdb } from "../cdb";
 
 const outputSchema = z.object({
 	outputPath: z
 		.string()
-		.describe("Absolute path of the modified .cdb save that was written"),
+		.describe("Absolute path of the modified .cdb database that was written"),
 	rowsModified: z
 		.number()
 		.describe("Number of rows changed by the statement (INSERT/UPDATE/DELETE)"),
 	statement: z.string().describe("The normalized statement that was executed"),
 });
 
-export function registerUpdateSave(server: McpServer): void {
+export function registerUpdateDatabase(server: McpServer): void {
 	server.registerTool(
-		"pcm_update_save",
+		"pcm_update_database",
 		{
-			title: "Update PCM save (writes a new .cdb)",
+			title: "Update PCM database (writes a new .cdb)",
 			description:
-				"Run a single write statement (INSERT, UPDATE or DELETE) against a Pro Cycling Manager `.cdb` save and write the result to a NEW `.cdb` file. The source save is never modified: the edited database is serialized to `outputPath`, which must differ from `savePath`. Only one data-mutating statement is allowed; SELECT, schema changes (DROP/CREATE/ALTER) and stacked statements are rejected. Use `pcm_query_save` to read, and `pcm_get_save_schema`/`pcm_get_table_schema` to discover tables and columns.",
+				"Run a single write statement (INSERT, UPDATE or DELETE) against a Pro Cycling Manager `.cdb` database and write the result to a NEW `.cdb` file. The source database is never modified: the edited database is serialized to `outputPath`, which must differ from `databasePath`. Only one data-mutating statement is allowed; SELECT, schema changes (DROP/CREATE/ALTER) and stacked statements are rejected. Use `pcm_query_database` to read, and `pcm_list_tables`/`pcm_get_table_schema` to discover tables and columns.",
 			inputSchema: {
-				savePath: z
+				databasePath: z
 					.string()
-					.describe("Absolute path to the source .cdb save file"),
+					.describe("Absolute path to the source .cdb database file"),
 				outputPath: z
 					.string()
 					.describe(
-						"Absolute path of the .cdb file to write the modified save to. Must differ from savePath, sit in an existing directory, and not already exist (existing files are never overwritten).",
+						"Absolute path of the .cdb file to write the modified database to. Must differ from databasePath, sit in an existing directory, and not already exist (existing files are never overwritten).",
 					),
 				statement: z
 					.string()
@@ -43,10 +43,10 @@ export function registerUpdateSave(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath, outputPath, statement }) =>
-			withSaveDb(
-				savePath,
-				async (db, save) => {
+		async ({ databasePath, outputPath, statement }) =>
+			withCdb(
+				databasePath,
+				async (db, file) => {
 					const safe = assertWriteStatement(statement);
 
 					try {
@@ -56,7 +56,7 @@ export function registerUpdateSave(server: McpServer): void {
 					}
 
 					const rowsModified = db.getRowsModified();
-					const written = await writeSaveDb(db, outputPath, save.path);
+					const written = await writeCdb(db, outputPath, file.path);
 
 					const output: z.infer<typeof outputSchema> = {
 						outputPath: written,
@@ -79,7 +79,7 @@ const WRITE_STATEMENT_TYPES = new Set(["INSERT", "UPDATE", "DELETE"]);
  * Parsing is delegated to {@link parseSingleStatement}, which classifies the
  * statement by its leaf operation. Only `INSERT`/`UPDATE`/`DELETE` are allowed
  * (a `WITH … DELETE` CTE counts as a `DELETE`). Everything else is rejected:
- *  - reads (`SELECT`, `WITH … SELECT`) — those belong to `pcm_query_save`, and
+ *  - reads (`SELECT`, `WITH … SELECT`) — those belong to `pcm_query_database`, and
  *  - DDL (`DROP`/`CREATE`/`ALTER`/…) and anything unknown (`PRAGMA`, `ATTACH`),
  *    which would alter the schema and break the `sqlToCdb` round-trip (it needs
  *    the table structure / `DB_STRUCTURE` intact to re-encode the `.cdb`).
@@ -92,7 +92,7 @@ export function assertWriteStatement(rawStatement: string): string {
 	if (!WRITE_STATEMENT_TYPES.has(statement.type)) {
 		throw new Error(
 			"Only a single INSERT, UPDATE or DELETE statement is allowed. " +
-				"Use pcm_query_save to read; schema changes (DROP/CREATE/ALTER) are not supported.",
+				"Use pcm_query_database to read; schema changes (DROP/CREATE/ALTER) are not supported.",
 		);
 	}
 

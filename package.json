@@ -1,7 +1,7 @@
 {
 	"name": "pcm-mcp",
 	"version": "0.3.0",
-	"description": "MCP server for querying Pro Cycling Manager game databases",
+	"description": "MCP server for querying Pro Cycling Manager databases",
 	"type": "module",
 	"bin": {
 		"pcm-mcp": "dist/index.js"

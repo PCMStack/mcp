@@ -1,28 +1,27 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { registerGetTableSchema } from "../../src/tools/get-table-schema";
+import { registerListTables } from "../../src/tools/list-tables";
 import { createMockMcpServer } from "../mocks/mock-mcp-server";
 import type { MockMcpServer } from "../mocks/mock-mcp-server";
 import { databaseFixtures } from "../fixtures/database.fixture";
 
-describe("getTableSchema", () => {
+describe("listTables", () => {
 	let mcp: MockMcpServer;
 
 	beforeEach(() => {
 		mcp = createMockMcpServer();
-		registerGetTableSchema(mcp.server);
+		registerListTables(mcp.server);
 	});
 
-	it("registers the pcm_get_table_schema tool", () => {
-		expect(mcp.getTool("pcm_get_table_schema")).toBeDefined();
+	it("registers the pcm_list_tables tool", () => {
+		expect(mcp.getTool("pcm_list_tables")).toBeDefined();
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
 	it.each(databaseFixtures)(
-		"returns STA_race table schema for %s",
+		"returns every table for %s",
 		async (name, path) => {
-			const result = await mcp.callTool("pcm_get_table_schema", {
+			const result = await mcp.callTool("pcm_list_tables", {
 				databasePath: path,
-				tableName: "STA_race",
 			});
 
 			expect(result.structuredContent).toBeDefined();
