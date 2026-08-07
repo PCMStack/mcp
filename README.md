@@ -22,17 +22,17 @@
 
 ### Saves and databases
 
-A `.cdb` file is a database, in Cyanide's own binary format. Your career **saves** are `.cdb` databases the game writes as you play, but so are the official releases shipped with the game and the community updates you can download, and the tools here work on any of them.
+A `.cdb` file is a database, in Cyanide's own binary format. Your **saves** are `.cdb` databases the game writes as you play, but so are the official releases shipped with the game and the community updates you can download, and the tools here work on any of them.
 
 That is why one tool speaks of saves and the rest speak of databases:
 
-- **`pcm_list_saves`** finds *your* career saves, across every PCM edition installed on the machine.
+- **`pcm_list_saves`** finds *your* saves, across every PCM edition installed on the machine.
 - **Every other tool** takes a `databasePath`, the path to any `.cdb`, whether it came from `pcm_list_saves` or from somewhere else entirely.
 
 ## Features
 
 - **Zero setup**: run it with a single `npx` command, or install a `.mcpb` bundle with no terminal at all.
-- **Save discovery**: auto-detect your career saves on Windows, or point at any `.cdb` file directly.
+- **Save discovery**: auto-detect your saves on Windows, or point at any `.cdb` file directly.
 - **Rich queries**: search cyclists and teams, inspect rosters with full per-terrain ratings, and read player info.
 - **Raw SQL**: run guarded, read-only `SELECT` queries against any table.
 - **Guarded edits**: apply a single `INSERT`/`UPDATE`/`DELETE`, or edit a cyclist's ratings directly, and write the result to a new `.cdb`, never touching the original.
@@ -44,7 +44,7 @@ That is why one tool speaks of saves and the rest speak of databases:
 ### Prerequisites
 
 - [Node.js](https://nodejs.org) 22 or later (not required for the `.mcpb` bundle install)
-- A Pro Cycling Manager database (a `.cdb` file: a career save, an official release or a community update)
+- A Pro Cycling Manager database (a `.cdb` file: a save, an official release or a community update)
 
 ### Install
 
@@ -94,7 +94,7 @@ All tools are prefixed with `pcm_`, and every one except `pcm_list_saves` takes 
 
 | Tool                           | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **pcm_list_saves**             | Discover your PCM career saves on this machine by scanning the `Pro Cycling Manager <year>/Cloud` folders under `%APPDATA%`, across every installed edition (Windows only). Returns each save's absolute path (pass it as `databasePath` to the other tools), plus file name, last modified date and size (newest first).                                                                                                                                                                                                                                                        |
+| **pcm_list_saves**             | Discover your PCM saves on this machine by scanning the `Pro Cycling Manager <year>/Cloud` folders under `%APPDATA%`, across every installed edition (Windows only). Returns each save's absolute path (pass it as `databasePath` to the other tools), plus file name, last modified date and size (newest first).                                                                                                                                                                                                                                                        |
 | **pcm_validate_database**      | Validate that an absolute path points to an existing `.cdb` database and return its metadata. Stateless: keep the returned path in conversation context to pass to later tools.                                                                                                                                                                                                                                                                                                                                                                                                  |
 | **pcm_list_tables**            | List every table inside a `.cdb` database, with its ID and name, plus the total table count.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | **pcm_get_table_schema**       | Inspect a single table by name. Returns its columns (name, SQL type, NOT NULL and primary key flags) and its row count. Use `pcm_list_tables` first to discover available table names.                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -111,7 +111,7 @@ All tools are prefixed with `pcm_`, and every one except `pcm_list_saves` takes 
 
 Tools are **stateless**: there is no "current database" held by the server. Every tool takes an absolute `databasePath`, re-validates it, and re-reads the `.cdb` from disk into a fresh in-memory SQLite database (via [`cdb-converter`](https://www.npmjs.com/package/cdb-converter) + [`sql.js`](https://www.npmjs.com/package/sql.js)) for each call. The file on disk is never mutated: read tools only ever read it, and the write tools (`pcm_update_database`, `pcm_update_cyclist_ratings`) write their changes to a separate output `.cdb`. A typical flow is:
 
-1. `pcm_list_saves` (Windows) to find your career saves, or `pcm_validate_database` with an explicit path to point at any `.cdb`.
+1. `pcm_list_saves` (Windows) to find your saves, or `pcm_validate_database` with an explicit path to point at any `.cdb`.
 2. `pcm_search_cyclist`, `pcm_get_team_roster`, `pcm_query_database`, … to explore it.
 3. `pcm_generate_startlist_xml` to produce a startlist file for a race, or `pcm_update_cyclist_ratings` / `pcm_update_database` to write an edited copy.
 

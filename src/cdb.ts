@@ -9,7 +9,7 @@ import { errorResponse, validResponse } from "./helpers";
  * A Pro Cycling Manager `.cdb` database file on disk.
  *
  * `.cdb` is Cyanide's binary database format. The same format backs both a
- * player's career save (see `saves.ts`) and a standalone database such as an
+ * player's save (see `saves.ts`) and a standalone database such as an
  * official release or a community update — every tool here accepts either.
  */
 export interface CdbFile {
@@ -63,10 +63,10 @@ export async function validateCdb(databasePath: string): Promise<CdbFile> {
  * Read the current in-game date from a database as a `YYYYMMDD` integer
  * (e.g. `20260605`), or `null` when it can't be found or isn't a real date.
  *
- * PCM stores the career's current date in `GAM_config.gene_i_date`. It is the
- * reference point for any age- or season-relative computation, since a career
- * save advances as the career is played. Fresh official releases that haven't
- * started a career store `0` here; that sentinel is treated as "unknown"
+ * PCM stores the current in-game date in `GAM_config.gene_i_date`. It is the
+ * reference point for any age- or season-relative computation, since the date
+ * advances as the game is played. Fresh official releases that haven't been
+ * played store `0` here; that sentinel is treated as "unknown"
  * (returns `null`) so callers don't derive nonsensical ages from it.
  */
 export function getGameDate(db: CdbDatabase): number | null {

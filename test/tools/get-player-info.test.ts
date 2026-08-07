@@ -17,7 +17,7 @@ describe("getPlayerInfo", () => {
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	// The official-release fixtures are databases, not played careers, so they
+	// The official-release fixtures are databases, never played, so they
 	// have no active human player (GAM_user.game_i_active = 1). The tool should
 	// surface that as a graceful error rather than throwing.
 	it.each(databaseFixtures)(

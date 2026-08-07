@@ -4,10 +4,10 @@ import { join } from "node:path";
 import type { CdbFile } from "./cdb";
 
 /**
- * Discovery of the player's own career saves, per installed PCM edition.
+ * Discovery of the player's own saves, per installed PCM edition.
  *
  * This is the only module where "save" is meant literally: a `.cdb` written by
- * the game as the player plays a career. Everywhere else a `.cdb` is just a
+ * the game as the player plays. Everywhere else a `.cdb` is just a
  * database (see `cdb.ts`), which may equally be an official release or a
  * community update the player never saved themselves.
  */
@@ -112,7 +112,7 @@ async function collectCdbFiles(dir: string): Promise<CdbFile[]> {
 }
 
 /**
- * Discover all PCM career saves on the local machine, newest first.
+ * Discover all PCM saves on the local machine, newest first.
  *
  * @param root - The roaming AppData directory to scan. Defaults to the
  *   OS-specific location.

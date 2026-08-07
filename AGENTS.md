@@ -18,10 +18,10 @@ guarantee.
 Two words, deliberately not interchangeable:
 
 - **database** — a `.cdb` file. Cyanide's binary database format, and what every
-  tool but one actually operates on. It may be a career save, an official release
+  tool but one actually operates on. It may be a player save, an official release
   or a community update; nothing downstream cares which. The input parameter is
   `databasePath`, and the internals live in `src/cdb.ts`.
-- **save** — a `.cdb` the *game itself wrote* as the player played a career,
+- **save** — a `.cdb` the *game itself wrote* as the player played,
   discovered under a PCM edition's `Cloud/` folder. This meaning is confined to
   `src/saves.ts` and `pcm_list_saves`.
 
@@ -44,7 +44,7 @@ releases, not saves, which is precisely the case the old naming got wrong.
 src/
   index.ts        # entrypoint: builds McpServer, registers tools, connects stdio
   cdb.ts          # everything touching a .cdb: validate a path, open it in memory, serialize an edited copy, schema/game-date introspection
-  saves.ts        # locate the player's career saves across installed PCM editions
+  saves.ts        # locate the player's saves across installed PCM editions
   helpers.ts      # cross-cutting utilities: MCP tool responses, SQL statement parsing/errors, dates, startlist XML
   schemas/
     cyclist.ts          # shared cyclist ratings schema and its SQL read/write mappings
@@ -71,7 +71,7 @@ All tools are prefixed with `pcm_`. Every tool but `pcm_list_saves` takes an abs
 
 | Tool                         | Purpose                                                                                                                                                                                                                                               |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pcm_list_saves`             | Discover the player's career saves by scanning `Pro Cycling Manager <year>/Cloud` under `%APPDATA%`, across every installed edition (**Windows only**). The only tool that is about saves specifically.                                               |
+| `pcm_list_saves`             | Discover the player's saves by scanning `Pro Cycling Manager <year>/Cloud` under `%APPDATA%`, across every installed edition (**Windows only**). The only tool that is about saves specifically.                                               |
 | `pcm_validate_database`      | Validate a `.cdb` path and return metadata. Stateless — the path must be kept in conversation context for later tools.                                                                                                                                |
 | `pcm_list_tables`            | List all tables (id + name) via `DB_STRUCTURE`.                                                                                                                                                                                                       |
 | `pcm_get_table_schema`       | Inspect one table: columns (name, type, NOT NULL, PK) + row count.                                                                                                                                                                                    |

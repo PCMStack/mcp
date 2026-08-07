@@ -36,11 +36,11 @@ returned by the tool — don't invent it.
 
 ### 1. Get a database path
 
-Every step reads a `.cdb` database — a career save, an official release or a
+Every step reads a `.cdb` database — a player save, an official release or a
 community update, it makes no difference. If the user hasn't given an absolute
 `databasePath`:
 
-- Try `pcm_list_saves` to find their career saves (Windows only — fails on
+- Try `pcm_list_saves` to find their saves (Windows only — fails on
   macOS/Linux Wine/Proton prefixes).
 - Otherwise ask the user for the absolute `.cdb` path. Keep it in context; the
   tools are stateless and need it on every call.
