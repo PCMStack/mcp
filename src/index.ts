@@ -8,11 +8,14 @@ const { version } = JSON.parse(
 	readFileSync(join(__dirname, "../package.json"), "utf-8"),
 ) as { version: string };
 
+const { description } = JSON.parse(
+	readFileSync(join(__dirname, "../manifest.json"), "utf-8"),
+) as { description: string };
+
 const server = new McpServer({
 	name: "pcm-mcp",
 	version,
-	description:
-		"Pro Cycling Manager MCP server for reading and validating .cdb database files",
+	description,
 });
 
 registerTools(server);
