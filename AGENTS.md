@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for AI coding agents working in this repository.
 
 ## What this is
 
@@ -21,7 +21,7 @@ Two words, deliberately not interchangeable:
   tool but one actually operates on. It may be a player save, an official release
   or a community update; nothing downstream cares which. The input parameter is
   `databasePath`, and the internals live in `src/cdb.ts`.
-- **save** — a `.cdb` the *game itself wrote* as the player played,
+- **save** — a `.cdb` the _game itself wrote_ as the player played,
   discovered under a PCM edition's `Cloud/` folder. This meaning is confined to
   `src/saves.ts` and `pcm_list_saves`.
 
@@ -71,7 +71,7 @@ All tools are prefixed with `pcm_`. Every tool but `pcm_list_saves` takes an abs
 
 | Tool                         | Purpose                                                                                                                                                                                                                                               |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pcm_list_saves`             | Discover the player's saves by scanning `Pro Cycling Manager <year>/Cloud` under `%APPDATA%`, across every installed edition (**Windows only**). The only tool that is about saves specifically.                                               |
+| `pcm_list_saves`             | Discover the player's saves by scanning `Pro Cycling Manager <year>/Cloud` under `%APPDATA%`, across every installed edition (**Windows only**). The only tool that is about saves specifically.                                                      |
 | `pcm_validate_database`      | Validate a `.cdb` path and return metadata. Stateless — the path must be kept in conversation context for later tools.                                                                                                                                |
 | `pcm_list_tables`            | List all tables (id + name) via `DB_STRUCTURE`.                                                                                                                                                                                                       |
 | `pcm_get_table_schema`       | Inspect one table: columns (name, type, NOT NULL, PK) + row count.                                                                                                                                                                                    |
