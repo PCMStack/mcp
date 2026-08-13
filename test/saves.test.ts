@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { findCloudDirectories, listSaves, validateSave } from "../src/saves";
+import { findCloudDirectories, listSaves } from "../src/saves";
 
 let root: string;
 
@@ -66,18 +66,5 @@ describe("listSaves", () => {
 		const saves = await listSaves(root);
 
 		expect(saves[0].name).toBe("New.cdb");
-	});
-});
-
-describe("validateSave", () => {
-	it("returns metadata for an existing .cdb file", async () => {
-		const path = await writeSave("2024", "steam-id", "Career.cdb");
-
-		const save = await validateSave(path);
-
-		expect(save.name).toBe("Career.cdb");
-		expect(save.path).toBe(path);
-		expect(save.sizeBytes).toBeGreaterThan(0);
-		expect(save.lastModified).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 	});
 });

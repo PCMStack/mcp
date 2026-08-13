@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { withSaveDb } from "../save-db";
+import { withCdb } from "../cdb";
 
 const teamSchema = z.object({
 	id: z.number().describe("Team ID (IDteam)"),
@@ -38,9 +38,11 @@ export function registerSearchTeam(server: McpServer): void {
 		"pcm_search_team",
 		{
 			title: "Search PCM team by name",
-			description: `Search for a team in a Pro Cycling Manager \`.cdb\` save file by name (case-insensitive partial match against both the full name and the short name). Returns up to ${MAX_RESULTS} matching teams with their division name, country name, evaluation and general manager; \`truncated\` is true when more matches exist beyond the ${MAX_RESULTS} returned.`,
+			description: `Search for a team in a Pro Cycling Manager \`.cdb\` database by name (case-insensitive partial match against both the full name and the short name). Returns up to ${MAX_RESULTS} matching teams with their division name, country name, evaluation and general manager; \`truncated\` is true when more matches exist beyond the ${MAX_RESULTS} returned.`,
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 				name: z
 					.string()
 					.describe(
@@ -55,8 +57,8 @@ export function registerSearchTeam(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath, name }) =>
-			withSaveDb(savePath, (db) => {
+		async ({ databasePath, name }) =>
+			withCdb(databasePath, (db) => {
 				const stmt = db.prepare(
 					`SELECT
 						t.IDteam AS id,

@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { withSaveDb } from "../save-db";
+import { withCdb } from "../cdb";
 
 const outputSchema = z.object({
 	login: z.string().describe("Player login (game_sz_login)"),
@@ -32,9 +32,11 @@ export function registerGetPlayerInfo(server: McpServer): void {
 		{
 			title: "Get PCM player info",
 			description:
-				"Get the active human player and their team from a Pro Cycling Manager `.cdb` save file. Joins GAM_user (game_i_active = 1) with DYN_team, STA_division (current and next), and STA_country to return the player login plus team details (name, division name, country name, evaluation and manager).",
+				"Get the active human player and their team from a Pro Cycling Manager `.cdb` database. Joins GAM_user (game_i_active = 1) with DYN_team, STA_division (current and next), and STA_country to return the player login plus team details (name, division name, country name, evaluation and manager).",
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 			},
 			outputSchema,
 			annotations: {
@@ -44,8 +46,8 @@ export function registerGetPlayerInfo(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath }) =>
-			withSaveDb(savePath, (db, save) => {
+		async ({ databasePath }) =>
+			withCdb(databasePath, (db, file) => {
 				const stmt = db.prepare(
 					`SELECT
 						u.game_sz_login AS login,
@@ -69,7 +71,7 @@ export function registerGetPlayerInfo(server: McpServer): void {
 				try {
 					if (!stmt.step()) {
 						throw new Error(
-							`No active player (game_i_active = 1) found in ${save.name}.`,
+							`No active player (game_i_active = 1) found in ${file.name}.`,
 						);
 					}
 					row = stmt.getAsObject();

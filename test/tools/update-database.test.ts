@@ -6,9 +6,9 @@ import initSqlJs from "sql.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	assertWriteStatement,
-	registerUpdateSave,
-} from "../../src/tools/update-save";
-import { saveFixtures } from "../fixtures/save.fixture";
+	registerUpdateDatabase,
+} from "../../src/tools/update-database";
+import { databaseFixtures } from "../fixtures/database.fixture";
 import { createMockMcpServer } from "../mocks/mock-mcp-server";
 import type { MockMcpServer } from "../mocks/mock-mcp-server";
 
@@ -24,13 +24,13 @@ async function readGameDate(cdbPath: string): Promise<number> {
 	}
 }
 
-describe("updateSave", () => {
+describe("updateDatabase", () => {
 	let mcp: MockMcpServer;
 	let outDir: string;
 
 	beforeEach(async () => {
 		mcp = createMockMcpServer();
-		registerUpdateSave(mcp.server);
+		registerUpdateDatabase(mcp.server);
 		outDir = await mkdtemp(join(tmpdir(), "pcm-update-"));
 	});
 
@@ -38,17 +38,17 @@ describe("updateSave", () => {
 		await rm(outDir, { recursive: true, force: true });
 	});
 
-	it("registers the pcm_update_save tool", () => {
-		expect(mcp.getTool("pcm_update_save")).toBeDefined();
+	it("registers the pcm_update_database tool", () => {
+		expect(mcp.getTool("pcm_update_database")).toBeDefined();
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"applies an UPDATE and writes the change to a new .cdb for %s",
 		async (_name, path) => {
 			const outputPath = join(outDir, "edited.cdb");
-			const result = await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			const result = await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath,
 				statement: "UPDATE GAM_config SET gene_i_date = 20991231",
 			});
@@ -65,14 +65,14 @@ describe("updateSave", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"leaves the source save untouched for %s",
 		async (_name, path) => {
 			const before = await stat(path);
 			const outputPath = join(outDir, "edited.cdb");
 
-			await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath,
 				statement: "UPDATE GAM_config SET gene_i_date = 20991231",
 			});
@@ -83,11 +83,11 @@ describe("updateSave", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
-		"refuses to overwrite the source save for %s",
+	it.each(databaseFixtures)(
+		"refuses to overwrite the source database for %s",
 		async (_name, path) => {
-			const result = await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			const result = await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath: path,
 				statement: "UPDATE GAM_config SET gene_i_date = 20991231",
 			});
@@ -95,16 +95,16 @@ describe("updateSave", () => {
 			expect(result.isError).toBe(true);
 			expect(result.content[0]).toEqual({
 				type: "text",
-				text: "outputPath must differ from the source save — the input .cdb is never overwritten.",
+				text: "outputPath must differ from the source database — the input .cdb is never overwritten.",
 			});
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"rejects a non-.cdb output path for %s",
 		async (_name, path) => {
-			const result = await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			const result = await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath: join(outDir, "edited.txt"),
 				statement: "UPDATE GAM_config SET gene_i_date = 20991231",
 			});
@@ -117,21 +117,21 @@ describe("updateSave", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"refuses to overwrite an existing output file for %s",
 		async (_name, path) => {
 			const outputPath = join(outDir, "edited.cdb");
 			// First write succeeds and creates the file.
-			const first = await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			const first = await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath,
 				statement: "UPDATE GAM_config SET gene_i_date = 20991231",
 			});
 			expect(first.isError).toBeUndefined();
 
 			// A second write to the same path must not clobber it.
-			const second = await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			const second = await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath,
 				statement: "UPDATE GAM_config SET gene_i_date = 20991231",
 			});
@@ -143,11 +143,11 @@ describe("updateSave", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"errors when the output directory does not exist for %s",
 		async (_name, path) => {
-			const result = await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			const result = await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath: join(outDir, "missing", "edited.cdb"),
 				statement: "UPDATE GAM_config SET gene_i_date = 20991231",
 			});
@@ -160,11 +160,11 @@ describe("updateSave", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"maps a missing table to a schema-discovery hint for %s",
 		async (_name, path) => {
-			const result = await mcp.callTool("pcm_update_save", {
-				savePath: path,
+			const result = await mcp.callTool("pcm_update_database", {
+				databasePath: path,
 				outputPath: join(outDir, "edited.cdb"),
 				statement: "UPDATE not_a_table SET x = 1",
 			});
@@ -172,7 +172,7 @@ describe("updateSave", () => {
 			expect(result.isError).toBe(true);
 			expect(result.content[0]).toEqual({
 				type: "text",
-				text: 'Table "not_a_table" does not exist in this save — use pcm_get_save_schema to list available tables.',
+				text: 'Table "not_a_table" does not exist in this database — use pcm_list_tables to list available tables.',
 			});
 		},
 	);

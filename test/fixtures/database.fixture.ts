@@ -1,6 +1,13 @@
 import { fileURLToPath } from "node:url";
 
-export const saveFixtures: [
+/**
+ * Real `.cdb` databases, one per PCM edition, used to exercise the tools
+ * against every schema variation they must tolerate.
+ *
+ * These are official releases, not player saves — which is exactly why the
+ * tools take a `databasePath` rather than a `savePath`.
+ */
+export const databaseFixtures: [
 	name: string,
 	path: string,
 	hasMediumMountain: boolean,

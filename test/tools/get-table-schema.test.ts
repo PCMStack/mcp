@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { registerGetTableSchema } from "../../src/tools/get-table-schema";
 import { createMockMcpServer } from "../mocks/mock-mcp-server";
 import type { MockMcpServer } from "../mocks/mock-mcp-server";
-import { saveFixtures } from "../fixtures/save.fixture";
+import { databaseFixtures } from "../fixtures/database.fixture";
 
 describe("getTableSchema", () => {
 	let mcp: MockMcpServer;
@@ -17,11 +17,11 @@ describe("getTableSchema", () => {
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"returns STA_race table schema for %s",
-		async (name, path) => {
+		async (_, path) => {
 			const result = await mcp.callTool("pcm_get_table_schema", {
-				savePath: path,
+				databasePath: path,
 				tableName: "STA_race",
 			});
 

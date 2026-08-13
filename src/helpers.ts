@@ -65,7 +65,7 @@ export function buildStartlistXml(teams: StartlistTeam[]): string {
  * Translate sql.js "no such table/column" errors into actionable messages that
  * point the caller at the schema-discovery tools. Other errors pass through.
  *
- * Shared by the read (`pcm_query_save`) and write (`pcm_update_save`) tools.
+ * Shared by the read (`pcm_query_database`) and write (`pcm_update_database`) tools.
  */
 export function explainQueryError(error: unknown): Error {
 	const message = error instanceof Error ? error.message : String(error);
@@ -73,7 +73,7 @@ export function explainQueryError(error: unknown): Error {
 	const missingTable = /no such table:\s*(\S+)/i.exec(message);
 	if (missingTable) {
 		return new Error(
-			`Table "${missingTable[1]}" does not exist in this save — use pcm_get_save_schema to list available tables.`,
+			`Table "${missingTable[1]}" does not exist in this database — use pcm_list_tables to list available tables.`,
 		);
 	}
 
@@ -87,7 +87,7 @@ export function explainQueryError(error: unknown): Error {
 	// Raised by `PRAGMA query_only = ON` when a statement tries to write.
 	if (/readonly database|not authorized/i.test(message)) {
 		return new Error(
-			"This tool is read-only — the query attempted to modify the save, which is not allowed.",
+			"This tool is read-only — the query attempted to modify the database, which is not allowed.",
 		);
 	}
 

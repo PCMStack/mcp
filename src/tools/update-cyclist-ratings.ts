@@ -7,7 +7,7 @@ import {
 	ratingsColumns,
 	ratingsSchema,
 } from "../schemas/cyclist";
-import { getTableColumnNames, withSaveDb, writeSaveDb } from "../save-db";
+import { getTableColumnNames, withCdb, writeCdb } from "../cdb";
 
 const ratingValue = z.number().int().min(50).max(85);
 
@@ -19,7 +19,7 @@ const newRatingsSchema = z.object({
 	mediumMountain: ratingValue
 		.optional()
 		.describe(
-			"New medium mountain rating (charac_i_medium_mountain) — rejected on saves that pre-date this column",
+			"New medium mountain rating (charac_i_medium_mountain) — rejected on databases that pre-date this column",
 		),
 	downhilling: ratingValue
 		.optional()
@@ -57,7 +57,7 @@ const newRatingsSchema = z.object({
 const outputSchema = z.object({
 	outputPath: z
 		.string()
-		.describe("Absolute path of the modified .cdb save that was written"),
+		.describe("Absolute path of the modified .cdb database that was written"),
 	cyclist: z
 		.object({
 			id: z.number().describe("Cyclist ID (IDcyclist)"),
@@ -74,15 +74,15 @@ export function registerUpdateCyclistRatings(server: McpServer): void {
 		{
 			title: "Update a cyclist's ratings (writes a new .cdb)",
 			description:
-				"Change one or more ability ratings of a cyclist in a Pro Cycling Manager `.cdb` save and write the result to a NEW `.cdb` file. The source save is never modified: the edited database is serialized to `outputPath`, which must differ from `savePath`. Only the ratings passed in `ratings` are changed; the cyclist's full ratings after the update are returned. Use `pcm_search_cyclist` to find the cyclist's ID first.",
+				"Change one or more ability ratings of a cyclist in a Pro Cycling Manager `.cdb` database and write the result to a NEW `.cdb` file. The source database is never modified: the edited database is serialized to `outputPath`, which must differ from `databasePath`. Only the ratings passed in `ratings` are changed; the cyclist's full ratings after the update are returned. Use `pcm_search_cyclist` to find the cyclist's ID first.",
 			inputSchema: {
-				savePath: z
+				databasePath: z
 					.string()
-					.describe("Absolute path to the source .cdb save file"),
+					.describe("Absolute path to the source .cdb database file"),
 				outputPath: z
 					.string()
 					.describe(
-						"Absolute path of the .cdb file to write the modified save to. Must differ from savePath, sit in an existing directory, and not already exist (existing files are never overwritten).",
+						"Absolute path of the .cdb file to write the modified database to. Must differ from databasePath, sit in an existing directory, and not already exist (existing files are never overwritten).",
 					),
 				cyclistId: z
 					.number()
@@ -102,10 +102,10 @@ export function registerUpdateCyclistRatings(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath, outputPath, cyclistId, ratings }) =>
-			withSaveDb(
-				savePath,
-				async (db, save) => {
+		async ({ databasePath, outputPath, cyclistId, ratings }) =>
+			withCdb(
+				databasePath,
+				async (db, file) => {
 					const changes = Object.entries(ratings).filter(
 						([, value]) => value !== undefined,
 					) as [RatingField, number][];
@@ -120,7 +120,7 @@ export function registerUpdateCyclistRatings(server: McpServer): void {
 					);
 					if (!hasMediumMountain && ratings.mediumMountain !== undefined) {
 						throw new Error(
-							"This save pre-dates the charac_i_medium_mountain column — mediumMountain cannot be set on it.",
+							"This database pre-dates the charac_i_medium_mountain column — mediumMountain cannot be set on it.",
 						);
 					}
 
@@ -140,7 +140,7 @@ export function registerUpdateCyclistRatings(server: McpServer): void {
 							check.bind([cyclistId]);
 							if (!check.step()) {
 								throw new Error(
-									`No cyclist with IDcyclist = ${cyclistId} in this save — use pcm_search_cyclist to find the right ID.`,
+									`No cyclist with IDcyclist = ${cyclistId} in this database — use pcm_search_cyclist to find the right ID.`,
 								);
 							}
 						} finally {
@@ -171,7 +171,7 @@ export function registerUpdateCyclistRatings(server: McpServer): void {
 						stmt.free();
 					}
 
-					const written = await writeSaveDb(db, outputPath, save.path);
+					const written = await writeCdb(db, outputPath, file.path);
 
 					const output: z.infer<typeof outputSchema> = {
 						outputPath: written,

@@ -3,7 +3,7 @@
 	"name": "pcm-mcp-server",
 	"version": "0.3.0",
 	"description": "MCP server for querying and editing Pro Cycling Manager game databases",
-	"long_description": "MCP server for querying and editing Pro Cycling Manager game databases. This server provides tools to discover, inspect and query PCM career save files via the MCP protocol, allowing AI assistants to explore your saves in a structured way. Write tools never modify the source save: edits are always serialized to a new .cdb file, and existing files are never overwritten.",
+	"long_description": "MCP server for querying and editing Pro Cycling Manager game databases. PCM stores its data as binary .cdb database files. Your own saves, but also the official releases and community updates. This server discovers your saves, and inspects and queries any .cdb via the MCP protocol, so AI assistants can explore it in a structured way. Write tools never modify the source: edits are always serialized to a new .cdb file, and existing files are never overwritten.",
 	"author": {
 		"name": "mpicciolli"
 	},

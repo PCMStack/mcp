@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { buildStartlistXml } from "../helpers";
-import { withSaveDb } from "../save-db";
+import { withCdb } from "../cdb";
 
 const outputSchema = z.object({
 	fileName: z
@@ -18,9 +18,11 @@ export function registerGenerateStartlistXml(server: McpServer): void {
 		{
 			title: "Generate PCM startlist XML",
 			description:
-				'Generate a Pro Cycling Manager startlist XML document from a list of teams and their cyclist rosters. Looks up the race in the `.cdb` save by `IDrace` to derive the output file name from `STA_race.gene_sz_filename` (e.g. `c0_almeria.xml`). Returns both the file name and the XML as text. The XML is a `<startlist>` root containing `<team id="N">` elements, each with self-closing `<cyclist id="N" />` children. Team and cyclist IDs map to the PCM `DYN_team.IDteam` and `DYN_cyclist.IDcyclist` columns and can be looked up with `pcm_search_cyclist` or `pcm_query_save`. The number of cyclists per team is free.',
+				'Generate a Pro Cycling Manager startlist XML document from a list of teams and their cyclist rosters. Looks up the race in the `.cdb` database by `IDrace` to derive the output file name from `STA_race.gene_sz_filename` (e.g. `c0_almeria.xml`). Returns both the file name and the XML as text. The XML is a `<startlist>` root containing `<team id="N">` elements, each with self-closing `<cyclist id="N" />` children. Team and cyclist IDs map to the PCM `DYN_team.IDteam` and `DYN_cyclist.IDcyclist` columns and can be looked up with `pcm_search_cyclist` or `pcm_query_database`. The number of cyclists per team is free.',
 			inputSchema: {
-				savePath: z.string().describe("Absolute path to the .cdb save file"),
+				databasePath: z
+					.string()
+					.describe("Absolute path to the .cdb database file"),
 				raceId: z
 					.number()
 					.int()
@@ -53,8 +55,8 @@ export function registerGenerateStartlistXml(server: McpServer): void {
 				openWorldHint: false,
 			},
 		},
-		async ({ savePath, raceId, teams }) =>
-			withSaveDb(savePath, (db) => {
+		async ({ databasePath, raceId, teams }) =>
+			withCdb(databasePath, (db) => {
 				const stmt = db.prepare(
 					"SELECT gene_sz_filename FROM STA_race WHERE IDrace = :raceId",
 				);

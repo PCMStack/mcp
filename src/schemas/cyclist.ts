@@ -16,7 +16,7 @@ export const ratingsSchema = z.object({
 		.number()
 		.nullable()
 		.describe(
-			"Medium mountain rating (charac_i_medium_mountain) — null on saves that pre-date this column",
+			"Medium mountain rating (charac_i_medium_mountain) — null on databases that pre-date this column",
 		),
 	downhilling: z.number().describe("Downhilling rating (charac_i_downhilling)"),
 	cobble: z.number().describe("Cobblestone rating (charac_i_cobble)"),
@@ -60,7 +60,7 @@ export const ratingColumns = {
 export type RatingField = keyof typeof ratingColumns;
 
 /** SQL `SELECT` fragment that aliases the rating columns to {@link ratingsSchema}'s
- * field names. `mediumMountain` falls back to `NULL` on saves that pre-date the
+ * field names. `mediumMountain` falls back to `NULL` on databases that pre-date the
  * `charac_i_medium_mountain` column. */
 export function ratingsColumns(hasMediumMountain: boolean): string {
 	return `c.charac_i_plain           AS plain,

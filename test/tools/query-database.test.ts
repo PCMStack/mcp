@@ -1,30 +1,30 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
 	assertReadOnlyQuery,
-	registerQuerySave,
-} from "../../src/tools/query-save";
-import { saveFixtures } from "../fixtures/save.fixture";
+	registerQueryDatabase,
+} from "../../src/tools/query-database";
+import { databaseFixtures } from "../fixtures/database.fixture";
 import { createMockMcpServer } from "../mocks/mock-mcp-server";
 import type { MockMcpServer } from "../mocks/mock-mcp-server";
 
-describe("querySave", () => {
+describe("queryDatabase", () => {
 	let mcp: MockMcpServer;
 
 	beforeEach(() => {
 		mcp = createMockMcpServer();
-		registerQuerySave(mcp.server);
+		registerQueryDatabase(mcp.server);
 	});
 
-	it("registers the pcm_query_save tool", () => {
-		expect(mcp.getTool("pcm_query_save")).toBeDefined();
+	it("registers the pcm_query_database tool", () => {
+		expect(mcp.getTool("pcm_query_database")).toBeDefined();
 		expect(mcp.registerTool).toHaveBeenCalledOnce();
 	});
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"runs a read-only SELECT against %s",
 		async (_name, path) => {
-			const result = await mcp.callTool("pcm_query_save", {
-				savePath: path,
+			const result = await mcp.callTool("pcm_query_database", {
+				databasePath: path,
 				query: "SELECT COUNT(*) AS n FROM STA_race",
 			});
 
@@ -33,11 +33,11 @@ describe("querySave", () => {
 		},
 	);
 
-	it.each(saveFixtures)(
+	it.each(databaseFixtures)(
 		"rejects a WITH … DELETE CTE for %s",
 		async (_name, path) => {
-			const result = await mcp.callTool("pcm_query_save", {
-				savePath: path,
+			const result = await mcp.callTool("pcm_query_database", {
+				databasePath: path,
 				query: "WITH x AS (SELECT 1) DELETE FROM STA_race",
 			});
 

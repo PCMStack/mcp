@@ -1,28 +1,26 @@
 import { readdir, stat } from "node:fs/promises";
 import { homedir, platform } from "node:os";
-import { basename, join } from "node:path";
+import { join } from "node:path";
+import type { CdbFile } from "./cdb";
 
-/** A Pro Cycling Manager `.cdb` save file discovered on disk. */
-export interface SaveFile {
-	/** Absolute path to the `.cdb` file. */
-	path: string;
-	/** File name, e.g. `MyCareer.cdb`. */
-	name: string;
-	/** Last modification time as an ISO 8601 string. */
-	lastModified: string;
-	/** File size in bytes. */
-	sizeBytes: number;
-}
+/**
+ * Discovery of the player's own saves, per installed PCM edition.
+ *
+ * This is the only module where "save" is meant literally: a `.cdb` written by
+ * the game as the player plays. Everywhere else a `.cdb` is just a
+ * database (see `cdb.ts`), which may equally be an official release or a
+ * community update the player never saved themselves.
+ */
 
 /** PCM version folders are named like `Pro Cycling Manager 2024`. */
 const PCM_FOLDER_PREFIX = "Pro Cycling Manager";
 
 /**
- * Within each version folder, ongoing careers live under `Cloud/<profile>/`,
+ * Within each version folder, ongoing saves live under `Cloud/<profile>/`,
  * where `<profile>` is the player's SteamID64 or a
  * profile name, depending on the PCM version.
  * (Timestamped backups live in a sibling `WeeklySaves/` folder, which we
- * intentionally do not scan — only live careers are surfaced.)
+ * intentionally do not scan — only live saves are surfaced.)
  */
 const CLOUD_DIR = "Cloud";
 
@@ -30,12 +28,12 @@ const CLOUD_DIR = "Cloud";
  * Absolute path to the roaming AppData directory that holds the per-version
  * `Pro Cycling Manager <year>` folders.
  *
- * PCM only ships on Windows, where careers live under
+ * PCM only ships on Windows, where saves live under
  * `%APPDATA%/Pro Cycling Manager <year>/Cloud/<profile>/` (where `<profile>` is
  * a SteamID64 or a profile name). On macOS/Linux the
  * saves live inside a Wine/Proton prefix that we can't reliably locate, so
  * auto-discovery is unsupported there — pass an absolute `.cdb` path to
- * `pcm_validate_save` instead.
+ * `pcm_validate_database` instead.
  *
  * @throws on non-Windows platforms.
  */
@@ -44,7 +42,7 @@ export function getPcmRoot(): string {
 		throw new Error(
 			"Pro Cycling Manager save auto-discovery is only supported on Windows. " +
 				"On macOS/Linux the saves live inside a Wine/Proton prefix — " +
-				"pass an absolute .cdb path to pcm_validate_save instead.",
+				"pass an absolute .cdb path to pcm_validate_database instead.",
 		);
 	}
 	return process.env.APPDATA ?? join(homedir(), "AppData", "Roaming");
@@ -87,11 +85,11 @@ export async function findCloudDirectories(
 }
 
 /**
- * Recursively collect `.cdb` files under `dir` (careers nest one level deep
+ * Recursively collect `.cdb` files under `dir` (saves nest one level deep
  * inside a `<profile>` folder, but we walk arbitrary depth to be safe).
  */
-async function collectCdbFiles(dir: string): Promise<SaveFile[]> {
-	const saves: SaveFile[] = [];
+async function collectCdbFiles(dir: string): Promise<CdbFile[]> {
+	const saves: CdbFile[] = [];
 	const entries = await readdir(dir, { withFileTypes: true });
 	for (const entry of entries) {
 		const fullPath = join(dir, entry.name);
@@ -114,7 +112,7 @@ async function collectCdbFiles(dir: string): Promise<SaveFile[]> {
 }
 
 /**
- * Discover all PCM `.cdb` career save files on the local machine, newest first.
+ * Discover all PCM saves on the local machine, newest first.
  *
  * @param root - The roaming AppData directory to scan. Defaults to the
  *   OS-specific location.
@@ -123,51 +121,21 @@ async function collectCdbFiles(dir: string): Promise<SaveFile[]> {
  */
 export async function listSaves(
 	root: string = getPcmRoot(),
-): Promise<SaveFile[]> {
+): Promise<CdbFile[]> {
 	if (!(await isDirectory(root))) {
 		throw new Error(
 			`No Pro Cycling Manager data found. Expected a "Pro Cycling Manager <year>" folder under: ${root}. ` +
 				"PCM may not be installed, or its saves live in a custom location — " +
-				"pass an absolute .cdb path to pcm_validate_save instead.",
+				"pass an absolute .cdb path to pcm_validate_database instead.",
 		);
 	}
 
 	const cloudDirs = await findCloudDirectories(root);
-	const saves: SaveFile[] = [];
+	const saves: CdbFile[] = [];
 	for (const dir of cloudDirs) {
 		saves.push(...(await collectCdbFiles(dir)));
 	}
 
 	saves.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
 	return saves;
-}
-
-/**
- * Validate that `savePath` points to an existing `.cdb` file and return its
- * metadata. Performs no caching and mutates no state.
- *
- * @throws if the path does not end in `.cdb`, does not exist, or is not a file.
- */
-export async function validateSave(savePath: string): Promise<SaveFile> {
-	if (!savePath.toLowerCase().endsWith(".cdb")) {
-		throw new Error(`Not a .cdb save file: ${savePath}`);
-	}
-
-	let info: Awaited<ReturnType<typeof stat>>;
-	try {
-		info = await stat(savePath);
-	} catch {
-		throw new Error(`Save file not found: ${savePath}`);
-	}
-
-	if (!info.isFile()) {
-		throw new Error(`Path is not a file: ${savePath}`);
-	}
-
-	return {
-		path: savePath,
-		name: basename(savePath),
-		lastModified: info.mtime.toISOString(),
-		sizeBytes: info.size,
-	};
 }

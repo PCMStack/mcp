@@ -11,9 +11,9 @@ import {
 	type Mock,
 	vi,
 } from "vitest";
-import { getTableColumnNames, withSaveDb } from "../src/save-db";
+import { getTableColumnNames, validateCdb, withCdb } from "../src/cdb";
 
-// withSaveDb reads a real .cdb file but the cdb->SQL conversion needs the real
+// withCdb reads a real .cdb file but the cdb->SQL conversion needs the real
 // binary format, so we stub it out and hand back a fake in-memory database.
 vi.mock("cdb-converter", () => ({ cdbToSql: vi.fn() }));
 vi.mock("sql.js", () => ({ default: vi.fn(() => ({})) }));
@@ -21,14 +21,14 @@ vi.mock("sql.js", () => ({ default: vi.fn(() => ({})) }));
 const cdbToSqlMock = cdbToSql as Mock;
 
 let dir: string;
-let savePath: string;
+let databasePath: string;
 /** A fake sql.js database; we only care that it gets closed and configured. */
 const fakeDb = { close: vi.fn(), run: vi.fn() };
 
 beforeEach(async () => {
-	dir = await mkdtemp(join(tmpdir(), "pcm-save-db-"));
-	savePath = join(dir, "Career.cdb");
-	await writeFile(savePath, "raw cdb bytes");
+	dir = await mkdtemp(join(tmpdir(), "pcm-cdb-"));
+	databasePath = join(dir, "Career.cdb");
+	await writeFile(databasePath, "raw cdb bytes");
 
 	cdbToSqlMock.mockReset();
 	cdbToSqlMock.mockReturnValue(fakeDb);
@@ -40,32 +40,32 @@ afterEach(async () => {
 	await rm(dir, { recursive: true, force: true });
 });
 
-describe("withSaveDb", () => {
+describe("withCdb", () => {
 	it("wraps the callback's output in a valid response", async () => {
-		const result = await withSaveDb(savePath, () => ({ riders: 42 }));
+		const result = await withCdb(databasePath, () => ({ riders: 42 }));
 
 		expect(result.isError).toBeUndefined();
 		expect(result.structuredContent).toEqual({ riders: 42 });
 	});
 
-	it("passes the open database and save metadata to the callback", async () => {
-		const fn = vi.fn((_db: unknown, _save: { name: string; path: string }) => ({
+	it("passes the open database and file metadata to the callback", async () => {
+		const fn = vi.fn((_db: unknown, _file: { name: string; path: string }) => ({
 			ok: true,
 		}));
 
-		await withSaveDb(savePath, fn);
+		await withCdb(databasePath, fn);
 
-		const [db, save] = fn.mock.calls[0];
+		const [db, file] = fn.mock.calls[0];
 		expect(db).toBe(fakeDb);
-		expect(save.name).toBe("Career.cdb");
-		expect(save.path).toBe(savePath);
+		expect(file.name).toBe("Career.cdb");
+		expect(file.path).toBe(databasePath);
 	});
 
 	it("puts the database in read-only mode before running the callback", async () => {
 		const runOrder: string[] = [];
 		fakeDb.run.mockImplementation((sql: string) => runOrder.push(sql));
 
-		await withSaveDb(savePath, () => {
+		await withCdb(databasePath, () => {
 			runOrder.push("callback");
 			return {};
 		});
@@ -75,19 +75,19 @@ describe("withSaveDb", () => {
 	});
 
 	it("supports async callbacks", async () => {
-		const result = await withSaveDb(savePath, async () => ({ async: true }));
+		const result = await withCdb(databasePath, async () => ({ async: true }));
 
 		expect(result.structuredContent).toEqual({ async: true });
 	});
 
 	it("closes the database after a successful call", async () => {
-		await withSaveDb(savePath, () => ({}));
+		await withCdb(databasePath, () => ({}));
 
 		expect(fakeDb.close).toHaveBeenCalledTimes(1);
 	});
 
 	it("closes the database even when the callback throws", async () => {
-		const result = await withSaveDb(savePath, () => {
+		const result = await withCdb(databasePath, () => {
 			throw new Error("boom");
 		});
 
@@ -97,7 +97,7 @@ describe("withSaveDb", () => {
 	});
 
 	it("returns an error response for a non-.cdb path without opening a database", async () => {
-		const result = await withSaveDb(join(dir, "notes.txt"), () => ({}));
+		const result = await withCdb(join(dir, "notes.txt"), () => ({}));
 
 		expect(result.isError).toBe(true);
 		expect(cdbToSqlMock).not.toHaveBeenCalled();
@@ -105,8 +105,31 @@ describe("withSaveDb", () => {
 	});
 });
 
+describe("validateCdb", () => {
+	it("returns metadata for an existing .cdb file", async () => {
+		const file = await validateCdb(databasePath);
+
+		expect(file.name).toBe("Career.cdb");
+		expect(file.path).toBe(databasePath);
+		expect(file.sizeBytes).toBeGreaterThan(0);
+		expect(file.lastModified).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+	});
+
+	it("rejects a path that is not a .cdb file", async () => {
+		await expect(validateCdb(join(dir, "notes.txt"))).rejects.toThrow(
+			"Not a .cdb file",
+		);
+	});
+
+	it("rejects a .cdb path that does not exist", async () => {
+		await expect(validateCdb(join(dir, "missing.cdb"))).rejects.toThrow(
+			"Database file not found",
+		);
+	});
+});
+
 describe("getTableColumnNames", () => {
-	// sql.js is mocked at module level for the withSaveDb tests; these tests
+	// sql.js is mocked at module level for the withCdb tests; these tests
 	// need a real in-memory database, so pull in the actual module.
 	async function realDatabase() {
 		const { default: initSqlJs } =
