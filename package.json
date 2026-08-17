@@ -36,14 +36,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/mpicciolli/pcm-mcp.git"
+		"url": "git+https://github.com/PCMStack/mcp.git"
 	},
-	"author": "mpicciolli",
+	"author": "PCMStack",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/mpicciolli/pcm-mcp/issues"
+		"url": "https://github.com/PCMStack/mcp/issues"
 	},
-	"homepage": "https://github.com/mpicciolli/pcm-mcp#readme",
+	"homepage": "https://github.com/PCMStack/mcp#readme",
 	"engines": {
 		"node": ">=22.0.0"
 	},
