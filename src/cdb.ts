@@ -135,7 +135,9 @@ export async function withCdb<T extends Record<string, unknown>>(
 
 		const SQL = await initSqlJs();
 		const cdbBuffer = await readFile(file.path);
-		db = cdbToSql(cdbBuffer, SQL);
+		db = cdbToSql(cdbBuffer, SQL, {
+			preciseTypes: true,
+		});
 
 		if (config.queryOnly ?? true) {
 			db.run("PRAGMA query_only = ON;");
