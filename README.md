@@ -115,20 +115,6 @@ Tools are **stateless**: there is no "current database" held by the server. Ever
 2. `pcm_search_cyclist`, `pcm_get_team_roster`, `pcm_query_database`, … to explore it.
 3. `pcm_generate_startlist_xml` to produce a startlist file for a race, or `pcm_update_cyclist_ratings` / `pcm_update_database` to write an edited copy.
 
-## Renamed tools
-
-Several tools and the parameter they all take were renamed, so that "save" now means only what the game itself saved and everything else says "database". MCP clients read the tool list at connect time, so **no configuration change is needed**: restart your client and it picks up the new names. Only hand-written prompts, scripts or skills that name a tool or `savePath` explicitly need updating:
-
-| Before                 | After                   |
-| ---------------------- | ----------------------- |
-| `savePath` (all tools) | `databasePath`          |
-| `pcm_validate_save`    | `pcm_validate_database` |
-| `pcm_get_save_schema`  | `pcm_list_tables`       |
-| `pcm_query_save`       | `pcm_query_database`    |
-| `pcm_update_save`      | `pcm_update_database`   |
-
-`pcm_list_saves` keeps its name: it is the one tool genuinely about your saves. All other tools are unchanged.
-
 ## Development
 
 Clone the repo and install dependencies with `npm install`, then:
