@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/pcm-mcp"><img src="https://img.shields.io/npm/v/pcm-mcp.svg" alt="npm version" /></a>
-  <a href="https://github.com/mpicciolli/pcm-mcp/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/pcm-mcp.svg" alt="license" /></a>
+  <a href="https://github.com/PCMStack/mcp/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/pcm-mcp.svg" alt="license" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/pcm-mcp.svg" alt="node version" /></a>
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-blue.svg" alt="MCP compatible" /></a>
 </p>
@@ -51,7 +51,7 @@ That is why one tool speaks of saves and the rest speak of databases:
 <details open>
 <summary><strong>MCP Bundle (Claude Desktop, no terminal)</strong></summary>
 
-Download the latest `pcm-mcp.mcpb` from the [Releases page](https://github.com/mpicciolli/pcm-mcp/releases) and open it with **Claude for macOS or Windows**. An installation dialog appears, no terminal required.
+Download the latest `pcm-mcp.mcpb` from the [Releases page](https://github.com/PCMStack/mcp/releases) and open it with **Claude for macOS or Windows**. An installation dialog appears, no terminal required.
 
 > [!NOTE]
 > This method does not auto-update. To get a newer version, download and re-install the latest `.mcpb` from the Releases page.

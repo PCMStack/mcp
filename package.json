@@ -24,26 +24,26 @@
 		"start:dev": "tsup --watch --onSuccess \"node ./dist/index.js\""
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.7",
+		"@biomejs/biome": "2.5.8",
 		"@types/node": "^22.20.0",
 		"@types/sql.js": "^1.4.11",
 		"@vitest/coverage-v8": "^4.1.5",
 		"husky": "^9.1.7",
-		"lint-staged": "^15.5.2",
+		"lint-staged": "^17.3.0",
 		"tsup": "^8.0.0",
 		"typescript": "^5.9.3",
 		"vitest": "^4.1.5"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/mpicciolli/pcm-mcp.git"
+		"url": "git+https://github.com/PCMStack/mcp.git"
 	},
-	"author": "mpicciolli",
+	"author": "PCMStack",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/mpicciolli/pcm-mcp/issues"
+		"url": "https://github.com/PCMStack/mcp/issues"
 	},
-	"homepage": "https://github.com/mpicciolli/pcm-mcp#readme",
+	"homepage": "https://github.com/PCMStack/mcp#readme",
 	"engines": {
 		"node": ">=22.0.0"
 	},
