@@ -43,7 +43,7 @@
 	"bugs": {
 		"url": "https://github.com/PCMStack/mcp/issues"
 	},
-	"homepage": "https://github.com/PCMStack/mcp#readme",
+	"homepage": "https://pcmstack.com",
 	"engines": {
 		"node": ">=22.0.0"
 	},
