@@ -24,7 +24,7 @@
 		"start:dev": "tsup --watch --onSuccess \"node ./dist/index.js\""
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.8",
+		"@biomejs/biome": "2.5.9",
 		"@types/node": "^22.20.0",
 		"@types/sql.js": "^1.4.11",
 		"@vitest/coverage-v8": "^4.1.5",
