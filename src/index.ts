@@ -4,13 +4,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerTools } from "./tools/index";
 
-const { version } = JSON.parse(
+const { version, description } = JSON.parse(
 	readFileSync(join(__dirname, "../package.json"), "utf-8"),
-) as { version: string };
-
-const { description } = JSON.parse(
-	readFileSync(join(__dirname, "../manifest.json"), "utf-8"),
-) as { description: string };
+) as { version: string; description: string };
 
 const server = new McpServer({
 	name: "pcm-mcp",
