@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" alt="PCM MCP" width="150" />
+  <img src="assets/icon.png" alt="PCMStack MCP Server" width="150" />
 </p>
 
 <h1 align="center">Pro Cycling Manager MCP Server</h1>
