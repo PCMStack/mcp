@@ -30,4 +30,4 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
-          files: dist/pcm-mcp.mcpb
+          files: dist/pcmstack.mcpb

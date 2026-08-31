@@ -19,7 +19,7 @@
 		"test:watch": "vitest",
 		"coverage": "vitest run --coverage",
 		"prepare": "husky",
-		"pack": "mcpb pack . dist/pcm-mcp.mcpb",
+		"pack": "mcpb pack . dist/pcmstack.mcpb",
 		"start": "node ./dist/index.js",
 		"start:dev": "tsup --watch --onSuccess \"node ./dist/index.js\""
 	},

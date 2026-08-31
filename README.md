@@ -51,7 +51,7 @@ That is why one tool speaks of saves and the rest speak of databases:
 <details open>
 <summary><strong>MCP Bundle (Claude Desktop, no terminal)</strong></summary>
 
-Download the latest `pcm-mcp.mcpb` from the [Releases page](https://github.com/PCMStack/mcp/releases) and open it with **Claude for macOS or Windows**. An installation dialog appears, no terminal required.
+Download the latest `pcmstack.mcpb` from the [Releases page](https://github.com/PCMStack/mcp/releases) and open it with **Claude for macOS or Windows**. An installation dialog appears, no terminal required.
 
 > [!NOTE]
 > This method does not auto-update. To get a newer version, download and re-install the latest `.mcpb` from the Releases page.
@@ -66,7 +66,7 @@ Add the following to your client's MCP configuration file (`claude_desktop_confi
 ```json
 {
   "mcpServers": {
-    "pcm-mcp": {
+    "pcmstack": {
       "command": "npx",
       "args": ["-y", "pcm-mcp"]
     }
@@ -126,7 +126,7 @@ npm run test:watch  # vitest in watch mode
 npm run coverage  # vitest with v8 coverage
 npm run lint      # biome lint --write . (autofixes)
 npm run format    # biome format --write .
-npm run pack      # produce dist/pcm-mcp.mcpb
+npm run pack      # produce dist/pcmstack.mcpb
 ```
 
 To debug the server interactively with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):

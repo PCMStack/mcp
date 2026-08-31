@@ -9,7 +9,7 @@ const { version, description } = JSON.parse(
 ) as { version: string; description: string };
 
 const server = new McpServer({
-	name: "pcm-mcp",
+	name: "pcmstack",
 	version,
 	description,
 });
