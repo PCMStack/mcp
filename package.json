@@ -1,6 +1,6 @@
 {
 	"name": "@pcmstack/mcp",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"description": "MCP server for querying and editing Pro Cycling Manager game databases",
 	"type": "module",
 	"bin": {

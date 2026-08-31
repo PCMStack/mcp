@@ -2,7 +2,7 @@
 	"manifest_version": "0.3",
 	"name": "pcmstack",
 	"display_name": "PCMStack",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"description": "MCP server for querying and editing Pro Cycling Manager game databases",
 	"long_description": "MCP server for querying and editing Pro Cycling Manager game databases. PCM stores its data as binary .cdb database files. Your own saves, but also the official releases and community updates. This server discovers your saves, and inspects and queries any .cdb via the MCP protocol, so AI assistants can explore it in a structured way. Write tools never modify the source: edits are always serialized to a new .cdb file, and existing files are never overwritten.",
 	"author": {
