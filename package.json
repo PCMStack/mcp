@@ -1,14 +1,17 @@
 {
-	"name": "pcm-mcp",
+	"name": "@pcmstack/mcp",
 	"version": "0.4.1",
 	"description": "MCP server for querying and editing Pro Cycling Manager game databases",
 	"type": "module",
 	"bin": {
-		"pcm-mcp": "dist/index.js"
+		"pcmstack": "dist/index.js"
 	},
 	"files": [
 		"dist"
 	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsup --watch",
