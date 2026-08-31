@@ -27,7 +27,7 @@ export interface CdbFile {
 export type CdbDatabase = ReturnType<typeof cdbToSql>;
 
 /** Smallest plausible `YYYYMMDD` value (year 1000), used to reject sentinels. */
-const MIN_YMD = 10000000;
+export const MIN_YMD = 10000000;
 
 /**
  * Validate that `databasePath` points to an existing `.cdb` file and return its

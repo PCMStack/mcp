@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { mapRatings, ratingsColumns, ratingsSchema } from "../schemas/cyclist";
 import { ageFromYmd } from "../helpers";
-import { getGameDate, getTableColumnNames, withCdb } from "../cdb";
+import { getGameDate, getTableColumnNames, MIN_YMD, withCdb } from "../cdb";
 
 const cyclistSchema = z.object({
 	id: z.number().describe("Cyclist ID (IDcyclist)"),
@@ -155,7 +155,7 @@ export function registerGetTeamRoster(server: McpServer): void {
 						const rawBirthdate =
 							row.birthdate != null ? Number(row.birthdate) : null;
 						const birthdate =
-							rawBirthdate != null && rawBirthdate >= 10000000
+							rawBirthdate != null && rawBirthdate >= MIN_YMD
 								? rawBirthdate
 								: null;
 						cyclists.push({

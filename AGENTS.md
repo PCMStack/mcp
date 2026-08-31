@@ -43,7 +43,7 @@ releases, not saves, which is precisely the case the old naming got wrong.
 ```
 src/
   index.ts        # entrypoint: builds McpServer, registers tools, connects stdio
-  cdb.ts          # everything touching a .cdb: validate a path, open it in memory, serialize an edited copy, schema/game-date introspection
+  cdb.ts          # everything touching a .cdb: validate a path, open it in memory, serialize an edited copy, schema/game-date/career-data introspection
   saves.ts        # locate the player's saves across installed PCM editions
   helpers.ts      # cross-cutting utilities: MCP tool responses, SQL statement parsing/errors, dates, startlist XML
   schemas/
@@ -77,6 +77,7 @@ All tools are prefixed with `pcm_`. Every tool but `pcm_list_saves` takes an abs
 | `pcm_get_table_schema`       | Inspect one table: columns (name, type, NOT NULL, PK) + row count.                                                                                                                                                                                    |
 | `pcm_get_player_info`        | Active human player + team (joins `GAM_user` `game_i_active = 1` with `DYN_team`).                                                                                                                                                                    |
 | `pcm_get_team_roster`        | Team roster (defaults to active player's team). Joins `DYN_cyclist` with active `DYN_contract_cyclist` + `STA_type_rider`: name, country, age, type, overall, contract end, wage, value, plus per-terrain ratings (flat). Errors on unknown `teamId`. |
+| `pcm_get_team_objectives`    | Objectives set by the player's sponsors. Takes no `teamId` — `DYN_objectif` only holds the human player's team objectives — and joins it with `STA_objectif_type`, `STA_race`, `STA_stage` and `DYN_cyclist` for the race objectives; the season-long ones (wins, ranking) come from the `SPONSOR_OBJECTIVE_*` keys of `GAM_career_data` with the team's standing in `DYN_ranking`, and are absent from editions that pre-date them. Errors without an active player.                                                                                                    |
 | `pcm_search_cyclist`         | Search cyclist by first/last name (partial, case-insensitive).                                                                                                                                                                                        |
 | `pcm_search_team`            | Search team by name (partial, case-insensitive; matches full name and short name).                                                                                                                                                                    |
 | `pcm_query_database`         | Run a single read-only `SELECT`/`WITH … SELECT`. Write/DDL rejected; results capped (default 100, max 1000).                                                                                                                                          |

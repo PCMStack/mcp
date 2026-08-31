@@ -5,6 +5,7 @@ import { registerListTables } from "./list-tables";
 import { registerGetTableSchema } from "./get-table-schema";
 import { registerGetPlayerInfo } from "./get-player-info";
 import { registerGetTeamRoster } from "./get-team-roster";
+import { registerGetTeamObjectives } from "./get-team-objectives";
 import { registerQueryDatabase } from "./query-database";
 import { registerUpdateCyclistRatings } from "./update-cyclist-ratings";
 import { registerUpdateDatabase } from "./update-database";
@@ -19,6 +20,7 @@ export function registerTools(server: McpServer): void {
 	registerGetTableSchema(server);
 	registerGetPlayerInfo(server);
 	registerGetTeamRoster(server);
+	registerGetTeamObjectives(server);
 	registerQueryDatabase(server);
 	registerUpdateDatabase(server);
 	registerUpdateCyclistRatings(server);

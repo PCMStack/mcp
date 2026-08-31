@@ -1,5 +1,6 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { type Result as IdentifyResult, identify } from "sql-query-identifier";
+import { type CdbDatabase, getTableColumnNames, MIN_YMD } from "./cdb";
 
 export function validResponse(
 	structured:
@@ -140,4 +141,59 @@ export function ageFromYmd(currentYmd: number, birthYmd: number): number {
 		age--;
 	}
 	return age;
+}
+
+/**
+ * A stage date as `YYYY-MM-DD`, or null when the stage is unknown.
+ *
+ * A played career stamps the resolved date on `STA_stage.gene_i_computed_date`
+ * (`YYYYMMDD`); it is `0` on databases the game has never advanced, where the
+ * day and month are still the only calendar the stage carries — those are then
+ * combined with the current season.
+ */
+export function stageDate(
+	computedDate: unknown,
+	day: unknown,
+	month: unknown,
+	season: number | null,
+): string | null {
+	const pad = (value: number) => String(value).padStart(2, "0");
+
+	const computed = computedDate != null ? Number(computedDate) : 0;
+	if (computed >= MIN_YMD) {
+		return `${Math.floor(computed / 10000)}-${pad(
+			Math.floor(computed / 100) % 100,
+		)}-${pad(computed % 100)}`;
+	}
+
+	const dayNumber = day != null ? Number(day) : 0;
+	const monthNumber = month != null ? Number(month) : 0;
+	if (season == null || dayNumber < 1 || monthNumber < 1) {
+		return null;
+	}
+	return `${season}-${pad(monthNumber)}-${pad(dayNumber)}`;
+}
+
+/**
+ * Value of a `GAM_career_data` key, or null when the key or the table's
+ * key/value shape is missing — PCM 2014 stores career data in named columns
+ * instead, and the season objective keys only exist in recent editions.
+ */
+export function getCareerValue(
+	db: CdbDatabase,
+	constant: string,
+): number | null {
+	if (!getTableColumnNames(db, "GAM_career_data").has("CONSTANT")) {
+		return null;
+	}
+	const result = db.exec(
+		"SELECT value FROM GAM_career_data WHERE CONSTANT = $constant LIMIT 1",
+		{ $constant: constant },
+	);
+	const raw = result[0]?.values?.[0]?.[0];
+	if (raw == null) {
+		return null;
+	}
+	const value = Number(raw);
+	return Number.isFinite(value) ? value : null;
 }

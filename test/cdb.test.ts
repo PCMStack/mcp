@@ -128,16 +128,16 @@ describe("validateCdb", () => {
 	});
 });
 
-describe("getTableColumnNames", () => {
-	// sql.js is mocked at module level for the withCdb tests; these tests
-	// need a real in-memory database, so pull in the actual module.
-	async function realDatabase() {
-		const { default: initSqlJs } =
-			await vi.importActual<typeof import("sql.js")>("sql.js");
-		const SQL = await initSqlJs();
-		return new SQL.Database();
-	}
+// sql.js is mocked at module level for the withCdb tests; the tests below
+// need a real in-memory database, so pull in the actual module.
+async function realDatabase() {
+	const { default: initSqlJs } =
+		await vi.importActual<typeof import("sql.js")>("sql.js");
+	const SQL = await initSqlJs();
+	return new SQL.Database();
+}
 
+describe("getTableColumnNames", () => {
 	it("returns the column names of a known table", async () => {
 		const db = await realDatabase();
 		try {
