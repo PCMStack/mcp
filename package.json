@@ -1,14 +1,17 @@
 {
-	"name": "pcm-mcp",
+	"name": "@pcmstack/mcp",
 	"version": "0.4.1",
 	"description": "MCP server for querying and editing Pro Cycling Manager game databases",
 	"type": "module",
 	"bin": {
-		"pcm-mcp": "dist/index.js"
+		"pcmstack": "dist/index.js"
 	},
 	"files": [
 		"dist"
 	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsup --watch",
@@ -19,7 +22,7 @@
 		"test:watch": "vitest",
 		"coverage": "vitest run --coverage",
 		"prepare": "husky",
-		"pack": "mcpb pack . dist/pcm-mcp.mcpb",
+		"pack": "mcpb pack . dist/pcmstack.mcpb",
 		"start": "node ./dist/index.js",
 		"start:dev": "tsup --watch --onSuccess \"node ./dist/index.js\""
 	},

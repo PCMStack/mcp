@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" alt="PCM MCP" width="150" />
+  <img src="assets/icon.png" alt="PCMStack MCP Server" width="150" />
 </p>
 
 <h1 align="center">Pro Cycling Manager MCP Server</h1>
@@ -9,13 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/pcm-mcp"><img src="https://img.shields.io/npm/v/pcm-mcp.svg" alt="npm version" /></a>
-  <a href="https://github.com/PCMStack/mcp/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/pcm-mcp.svg" alt="license" /></a>
-  <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/pcm-mcp.svg" alt="node version" /></a>
+  <a href="https://www.npmjs.com/package/@pcmstack/mcp"><img src="https://img.shields.io/npm/v/%40pcmstack%2Fmcp.svg" alt="npm version" /></a>
+  <a href="https://github.com/PCMStack/mcp/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/%40pcmstack%2Fmcp.svg" alt="license" /></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/%40pcmstack%2Fmcp.svg" alt="node version" /></a>
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-blue.svg" alt="MCP compatible" /></a>
 </p>
 
-`pcm-mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server that lets AI assistants such as Claude Desktop, ChatGPT and Gemini query your [Pro Cycling Manager](https://www.cyanide-studio.com/) (PCM) databases. Ask about a cyclist's ratings, browse a team's roster, run SQL against the database, or generate a race startlist, all in plain language.
+`@pcmstack/mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server that lets AI assistants such as Claude Desktop, ChatGPT and Gemini query your [Pro Cycling Manager](https://www.cyanide-studio.com/) (PCM) databases. Ask about a cyclist's ratings, browse a team's roster, run SQL against the database, or generate a race startlist, all in plain language.
 
 > [!IMPORTANT]
 > This server never modifies your existing files. PCM stores its data as binary `.cdb` files; each call re-reads the `.cdb` from disk and loads it into an **in-memory** SQLite database. Every read tool leaves the source untouched. The write tools, `pcm_update_database` and `pcm_update_cyclist_ratings`, serialize their changes to a **new** `.cdb` file (`outputPath`) and refuse to overwrite the input, so keep your original as a backup.
@@ -51,7 +51,7 @@ That is why one tool speaks of saves and the rest speak of databases:
 <details open>
 <summary><strong>MCP Bundle (Claude Desktop, no terminal)</strong></summary>
 
-Download the latest `pcm-mcp.mcpb` from the [Releases page](https://github.com/PCMStack/mcp/releases) and open it with **Claude for macOS or Windows**. An installation dialog appears, no terminal required.
+Download the latest `pcmstack.mcpb` from the [Releases page](https://github.com/PCMStack/mcp/releases) and open it with **Claude for macOS or Windows**. An installation dialog appears, no terminal required.
 
 > [!NOTE]
 > This method does not auto-update. To get a newer version, download and re-install the latest `.mcpb` from the Releases page.
@@ -66,9 +66,9 @@ Add the following to your client's MCP configuration file (`claude_desktop_confi
 ```json
 {
   "mcpServers": {
-    "pcm-mcp": {
+    "pcmstack": {
       "command": "npx",
-      "args": ["-y", "pcm-mcp"]
+      "args": ["-y", "@pcmstack/mcp"]
     }
   }
 }
@@ -126,7 +126,7 @@ npm run test:watch  # vitest in watch mode
 npm run coverage  # vitest with v8 coverage
 npm run lint      # biome lint --write . (autofixes)
 npm run format    # biome format --write .
-npm run pack      # produce dist/pcm-mcp.mcpb
+npm run pack      # produce dist/pcmstack.mcpb
 ```
 
 To debug the server interactively with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):

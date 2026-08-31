@@ -1,5 +1,5 @@
 {
-	"*.json": ["biome check --write", "biome lint --write"],
-	"*.ts": ["biome check --write", "biome lint --write"],
-	"*.js": ["biome check --write", "biome lint --write"]
+	"*.json": ["biome check --write"],
+	"*.ts": ["biome check --write"],
+	"*.js": ["biome check --write"]
 }
